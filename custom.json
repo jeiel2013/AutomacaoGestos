@@ -1,0 +1,54 @@
+{
+  "_comment": "Mapeamento gesto → ação. Edite aqui sem mexer em Python.",
+  "_formatos": {
+    "KEY":    ["KEY", "ctrl+t"],
+    "SCROLL": ["SCROLL", "up"],
+    "CMD":    ["CMD", "nautilus"]
+  },
+
+  "static": {
+    "FECHAR_JANELA":   ["KEY", "alt+F4"],
+    "SCROLL_CIMA":     ["SCROLL", "up"],
+    "SCROLL_BAIXO":    ["SCROLL", "down"],
+    "SELECIONAR_TUDO": ["KEY", "ctrl+a"],
+    "DELETAR":         ["KEY", "delete"],
+    "CONFIRMAR":       ["KEY", "enter"],
+    "VOLTAR":          ["KEY", "alt+left"],
+    "TROCAR_JANELA":   ["KEY", "alt+tab"],
+    "CAPTURA_TELA":    ["CMD", "gnome-screenshot", "-i"],
+    "WORKSPACE_DIR":   ["KEY", "super+ctrl+right"],
+    "NOVA_ABA":        ["KEY", "ctrl+t"],
+    "FECHAR_ABA":      ["KEY", "ctrl+w"],
+    "MAXIMIZAR":       ["KEY", "super+up"],
+    "MINIMIZAR":       ["KEY", "super+down"],
+    "DESFAZER":        ["KEY", "ctrl+z"],
+    "REFAZER":         ["KEY", "ctrl+shift+z"]
+  },
+
+  "dynamic": {
+    "SWIPE_DIREITA":         ["KEY", "alt+right"],
+    "SWIPE_ESQUERDA":        ["KEY", "alt+left"],
+    "SWIPE_CIMA":            ["KEY", "super+ctrl+up"],
+    "SWIPE_BAIXO":           ["KEY", "super+ctrl+down"],
+
+    "SWIPE_RAPIDO_DIREITA":  ["KEY", "ctrl+tab"],
+    "SWIPE_RAPIDO_ESQUERDA": ["KEY", "ctrl+shift+tab"],
+    "SWIPE_RAPIDO_CIMA":     ["KEY", "super+up"],
+    "SWIPE_RAPIDO_BAIXO":    ["KEY", "super+down"],
+
+    "SHAKE":                 ["KEY", "ctrl+z"],
+    "CIRCLE_CW":             ["KEY", "ctrl+shift+z"],
+    "CIRCLE_CCW":            ["KEY", "ctrl+z"],
+    "FIGURE_EIGHT":          ["KEY", "super+a"],
+    "WAVE_W":                ["CMD", "nautilus"],
+
+    "ZOOM_IN":               ["KEY", "ctrl+equal"],
+    "ZOOM_OUT":              ["KEY", "ctrl+minus"],
+
+    "PUSH_FRENTE":           ["KEY", "enter"],
+    "PULL_ATRAS":            ["KEY", "escape"],
+
+    "TILT_DIREITA":          ["KEY", "super+ctrl+right"],
+    "TILT_ESQUERDA":         ["KEY", "super+ctrl+left"]
+  }
+}
