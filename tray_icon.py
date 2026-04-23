@@ -2,61 +2,66 @@
 """
 tray_icon.py
 ------------
-Ícone na bandeja do sistema para controlar o gesture_control.py.
-
-Funcionalidades:
-  - Inicia o daemon automaticamente ao abrir
-  - Ícone verde  = reconhecimento ativo
-  - Ícone cinza  = pausado
-  - Ícone laranja = daemon não encontrado / erro
-  - Menu: Pausar/Retomar | Ver log | Configurações | Sair
-
-Dependências:
-  pip install pystray pillow
-
-Uso:
-  python3 tray_icon.py          # uso direto
-  (ou clique duplo no .desktop) # via launcher
+Ícone na bandeja usando AppIndicator3 (funciona no GNOME Wayland / Pop!_OS).
+Inicia e gerencia o gesture_control.py em segundo plano.
 """
 
-import subprocess
-import sys
 import os
-import time
+import sys
+import subprocess
 import threading
+import time
 from pathlib import Path
+
+# Forçar backend GTK antes de importar pystray
+os.environ.setdefault("PYSTRAY_BACKEND", "gtk")
+
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import Gtk, GLib
+try:
+    from gi.repository import AppIndicator3 as AppIndicator
+    HAS_INDICATOR = True
+except Exception:
+    HAS_INDICATOR = False
+
 from PIL import Image, ImageDraw
-import pystray
+import tempfile
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 BASE    = Path(__file__).parent
 SCRIPT  = BASE / "gesture_control.py"
-CONFIG  = BASE / "gestures" / "custom.json"
 LOGFILE = BASE / "gesture.log"
+CONFIG  = BASE / "gestures" / "custom.json"
 PIDFILE = Path("/tmp/gesture-control.pid")
 PAUSE   = Path("/tmp/gesture-control.pause")
 QUIT    = Path("/tmp/gesture-control.quit")
 
-# ── Cores do ícone ────────────────────────────────────────────────────────────
-COLOR_ACTIVE  = (40,  180, 100)   # verde
-COLOR_PAUSED  = (130, 130, 130)   # cinza
-COLOR_ERROR   = (220, 100,  40)   # laranja
+PYTHON  = sys.executable   # usa o mesmo python do venv atual
 
+# ── Ícones ────────────────────────────────────────────────────────────────────
+_icon_files: dict[str, str] = {}
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def make_icon(color: tuple) -> Image.Image:
-    """Cria um ícone circular 64×64 com a cor especificada."""
+def _make_icon_file(color: tuple, name: str) -> str:
+    """Gera um PNG temporário e retorna o caminho."""
+    if name in _icon_files:
+        return _icon_files[name]
     img  = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    draw.ellipse([6, 6, 58, 58], fill=color)
-    # pequeno indicador interno (círculo branco menor)
-    draw.ellipse([24, 24, 40, 40], fill=(255, 255, 255, 180))
-    return img
+    draw.ellipse([4, 4, 60, 60], fill=color)
+    draw.ellipse([22, 22, 42, 42], fill=(255, 255, 255, 200))
+    tmp  = tempfile.NamedTemporaryFile(suffix=f"_{name}.png", delete=False)
+    img.save(tmp.name)
+    _icon_files[name] = tmp.name
+    return tmp.name
 
+ICON_ACTIVE  = lambda: _make_icon_file((40, 180, 100), "active")
+ICON_PAUSED  = lambda: _make_icon_file((130, 130, 130), "paused")
+ICON_ERROR   = lambda: _make_icon_file((220, 100, 40), "error")
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
 def get_pid() -> int | None:
-    """Retorna o PID do daemon se estiver rodando, senão None."""
     if not PIDFILE.exists():
         return None
     try:
@@ -67,30 +72,23 @@ def get_pid() -> int | None:
         pass
     return None
 
-
 def is_paused() -> bool:
     return PAUSE.exists()
 
-
 def start_daemon():
-    """Inicia o gesture_control.py como processo filho."""
     env = os.environ.copy()
-    env.setdefault("DISPLAY", ":0")
     subprocess.Popen(
-        [sys.executable, str(SCRIPT)],
-        stdout = subprocess.DEVNULL,
-        stderr = subprocess.DEVNULL,
-        env    = env,
+        [PYTHON, str(SCRIPT)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=env,
     )
-    # aguarda o PID ser criado (até 3s)
     for _ in range(30):
         time.sleep(0.1)
         if get_pid():
             break
 
-
 def stop_daemon():
-    """Envia sinal de encerramento ao daemon."""
     QUIT.touch()
     pid = get_pid()
     if pid:
@@ -99,111 +97,115 @@ def stop_daemon():
     PIDFILE.unlink(missing_ok=True)
     QUIT.unlink(missing_ok=True)
 
+# ── AppIndicator UI ───────────────────────────────────────────────────────────
+class GestureIndicator:
+    def __init__(self):
+        self.ind = AppIndicator.Indicator.new(
+            "gesture-control",
+            ICON_ACTIVE(),
+            AppIndicator.IndicatorCategory.APPLICATION_STATUS,
+        )
+        self.ind.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        self.ind.set_menu(self._build_menu())
 
-# ── Callbacks do menu ─────────────────────────────────────────────────────────
+    def _build_menu(self) -> Gtk.Menu:
+        menu = Gtk.Menu()
 
-def on_toggle(icon: pystray.Icon, item):
-    """Alterna entre pausado e ativo."""
-    if is_paused():
+        self.item_toggle = Gtk.MenuItem(label="Pausar")
+        self.item_toggle.connect("activate", self.on_toggle)
+        menu.append(self.item_toggle)
+
+        menu.append(Gtk.SeparatorMenuItem())
+
+        item_log = Gtk.MenuItem(label="Ver log")
+        item_log.connect("activate", self.on_open_log)
+        menu.append(item_log)
+
+        item_cfg = Gtk.MenuItem(label="Editar gestos")
+        item_cfg.connect("activate", self.on_open_config)
+        menu.append(item_cfg)
+
+        item_restart = Gtk.MenuItem(label="Reiniciar daemon")
+        item_restart.connect("activate", self.on_restart)
+        menu.append(item_restart)
+
+        menu.append(Gtk.SeparatorMenuItem())
+
+        item_quit = Gtk.MenuItem(label="Sair")
+        item_quit.connect("activate", self.on_quit)
+        menu.append(item_quit)
+
+        menu.show_all()
+        return menu
+
+    def _set_icon(self, icon_path: str):
+        GLib.idle_add(self.ind.set_icon_full, icon_path, "gesture-control")
+
+    def on_toggle(self, _):
+        if is_paused():
+            PAUSE.unlink(missing_ok=True)
+            self.item_toggle.set_label("Pausar")
+            self._set_icon(ICON_ACTIVE())
+        else:
+            PAUSE.touch()
+            self.item_toggle.set_label("Retomar")
+            self._set_icon(ICON_PAUSED())
+
+    def on_open_log(self, _):
+        LOGFILE.touch()
+        subprocess.Popen(["xdg-open", str(LOGFILE)],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def on_open_config(self, _):
+        subprocess.Popen(["xdg-open", str(CONFIG)],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def on_restart(self, _):
+        stop_daemon()
+        time.sleep(0.3)
+        start_daemon()
+        self.item_toggle.set_label("Pausar")
+        self._set_icon(ICON_ACTIVE())
+
+    def on_quit(self, _):
+        stop_daemon()
         PAUSE.unlink(missing_ok=True)
-        icon.icon  = make_icon(COLOR_ACTIVE)
-        icon.title = "Gesture Control - ativo"
-    else:
-        PAUSE.touch()
-        icon.icon  = make_icon(COLOR_PAUSED)
-        icon.title = "Gesture Control - pausado"
+        # limpa arquivos de ícone temporários
+        for path in _icon_files.values():
+            try:
+                Path(path).unlink()
+            except Exception:
+                pass
+        Gtk.main_quit()
 
-
-def on_open_log(icon: pystray.Icon, item):
-    """Abre o arquivo de log no editor de texto padrão do GNOME."""
-    LOGFILE.touch()    # garante que o arquivo existe
-    subprocess.Popen(
-        ["xdg-open", str(LOGFILE)],
-        stdout = subprocess.DEVNULL,
-        stderr = subprocess.DEVNULL,
-    )
-
-
-def on_open_config(icon: pystray.Icon, item):
-    """Abre o custom.json no editor de texto padrão."""
-    subprocess.Popen(
-        ["xdg-open", str(CONFIG)],
-        stdout = subprocess.DEVNULL,
-        stderr = subprocess.DEVNULL,
-    )
-
-
-def on_restart(icon: pystray.Icon, item):
-    """Para e reinicia o daemon."""
-    stop_daemon()
-    time.sleep(0.3)
-    start_daemon()
-    icon.icon  = make_icon(COLOR_ACTIVE)
-    icon.title = "Gesture Control - ativo"
-
-
-def on_quit(icon: pystray.Icon, item):
-    """Encerra daemon e remove o ícone da bandeja."""
-    stop_daemon()
-    PAUSE.unlink(missing_ok=True)
-    icon.stop()
-
-
-# ── Monitor de saúde (watchdog) ───────────────────────────────────────────────
-
-def watchdog(icon: pystray.Icon):
-    """
-    Verifica a cada 10s se o daemon ainda está rodando.
-    Se morreu inesperadamente, reinicia e atualiza o ícone.
-    """
+# ── Watchdog ──────────────────────────────────────────────────────────────────
+def watchdog(indicator: GestureIndicator):
     while True:
         time.sleep(10)
-        if not get_pid() and not PAUSE.exists():
-            # daemon morreu — tenta reiniciar
+        if not get_pid() and not is_paused():
             try:
                 start_daemon()
-                icon.icon  = make_icon(COLOR_ACTIVE)
-                icon.title = "Gesture Control - ativo (reiniciado)"
+                GLib.idle_add(indicator._set_icon, ICON_ACTIVE())
+                GLib.idle_add(indicator.item_toggle.set_label, "Pausar")
             except Exception:
-                icon.icon  = make_icon(COLOR_ERROR)
-                icon.title = "Gesture Control - erro ao reiniciar"
+                GLib.idle_add(indicator._set_icon, ICON_ERROR())
 
-
-# ── Entry point ───────────────────────────────────────────────────────────────
-
+# ── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    # Iniciar daemon se ainda não estiver rodando
+    if not HAS_INDICATOR:
+        print("ERRO: AppIndicator3 não encontrado.")
+        print("Execute: sudo apt install gir1.2-appindicator3-0.1")
+        sys.exit(1)
+
     if not get_pid():
         start_daemon()
 
-    initial_color = COLOR_ACTIVE if get_pid() else COLOR_ERROR
-    initial_title = "Gesture Control - ativo" if get_pid() else "Gesture Control - erro"
+    indicator = GestureIndicator()
 
-    icon = pystray.Icon(
-        name  = "gesture-control",
-        icon  = make_icon(initial_color),
-        title = initial_title,
-        menu  = pystray.Menu(
-            pystray.MenuItem(
-                lambda text, item: "Pausar" if not is_paused() else "Retomar",
-                on_toggle,
-                default = True,    # ação do clique simples
-            ),
-            pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Ver log",          on_open_log),
-            pystray.MenuItem("Editar gestos",    on_open_config),
-            pystray.MenuItem("Reiniciar daemon", on_restart),
-            pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Sair",             on_quit),
-        ),
-    )
-
-    # Inicia watchdog em thread daemon (morre junto com o processo principal)
-    t = threading.Thread(target=watchdog, args=(icon,), daemon=True)
+    t = threading.Thread(target=watchdog, args=(indicator,), daemon=True)
     t.start()
 
-    icon.run()
-
+    Gtk.main()
 
 if __name__ == "__main__":
     main()

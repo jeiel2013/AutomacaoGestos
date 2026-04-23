@@ -2,18 +2,10 @@
 """
 gesture_control.py
 ------------------
-Processo principal do sistema de controle por gestos.
-Roda em segundo plano (sem janela), consome o mínimo de CPU possível
-e se comunica com o tray_icon.py via arquivos de sinalização em /tmp.
-
-Sinalização:
-  /tmp/gesture-control.pid   — PID do processo (criado ao iniciar)
-  /tmp/gesture-control.pause — se existir, o loop entra em modo pausa
-  /tmp/gesture-control.quit  — se existir, o processo encerra limpo
+Processo principal — usa a nova API mediapipe.tasks (0.10.13+).
 """
 
 import cv2
-import mediapipe as mp
 import time
 import logging
 import signal
@@ -22,13 +14,19 @@ import json
 import os
 from pathlib import Path
 
+import mediapipe as mp
+from mediapipe.tasks import python as mp_tasks
+from mediapipe.tasks.python import vision as mp_vision
+from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
-BASE     = Path(__file__).parent
-CONFIG   = BASE / "gestures" / "custom.json"
-LOGFILE  = BASE / "gesture.log"
-PIDFILE  = Path("/tmp/gesture-control.pid")
-PAUSE    = Path("/tmp/gesture-control.pause")
-QUIT     = Path("/tmp/gesture-control.quit")
+BASE      = Path(__file__).parent
+CONFIG    = BASE / "gestures" / "custom.json"
+LOGFILE   = BASE / "gesture.log"
+MODEL     = BASE / "hand_landmarker.task"
+PIDFILE   = Path("/tmp/gesture-control.pid")
+PAUSE     = Path("/tmp/gesture-control.pause")
+QUIT      = Path("/tmp/gesture-control.quit")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -39,7 +37,12 @@ logging.basicConfig(
 )
 log = logging.getLogger()
 
-# ── Carregar mapeamento de ações ──────────────────────────────────────────────
+# ── Verificações iniciais ─────────────────────────────────────────────────────
+if not MODEL.exists():
+    log.error("Modelo não encontrado: %s", MODEL)
+    log.error("Execute: wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task -O hand_landmarker.task")
+    sys.exit(1)
+
 try:
     with open(CONFIG, encoding="utf-8") as f:
         ACTION_MAP = json.load(f)
@@ -50,7 +53,7 @@ except json.JSONDecodeError as ex:
     log.error("Erro de sintaxe no custom.json: %s", ex)
     sys.exit(1)
 
-# ── Salvar PID ────────────────────────────────────────────────────────────────
+# ── PID ───────────────────────────────────────────────────────────────────────
 PIDFILE.write_text(str(os.getpid()))
 QUIT.unlink(missing_ok=True)
 
@@ -70,26 +73,39 @@ def shutdown(sig=None, frame=None):
 signal.signal(signal.SIGTERM, shutdown)
 signal.signal(signal.SIGINT,  shutdown)
 
-# ── Executar ação via evdev (sem ydotool, sem daemon) ─────────────────────────
-from gestures import keyboard
+# ── Módulos de gestos ─────────────────────────────────────────────────────────
+from gestures import static, dynamic, keyboard
 
 def run_action(cmd: list):
     keyboard.dispatch(cmd)
 
-# ── Importar módulos de gestos ────────────────────────────────────────────────
-from gestures import static, dynamic
-
-# ── Configuração MediaPipe ────────────────────────────────────────────────────
-mp_hands   = mp.solutions.hands
-CONFIDENCE = 0.75
-
 # ── Configurações de CPU ──────────────────────────────────────────────────────
-SKIP_FRAMES  = 2
-TARGET_FPS   = 15
-FRAME_DELAY  = 1.0 / TARGET_FPS
-COOLDOWN     = 1.2
-PROC_WIDTH   = 320
-PROC_HEIGHT  = 240
+SKIP_FRAMES = 2
+TARGET_FPS  = 15
+FRAME_DELAY = 1.0 / TARGET_FPS
+COOLDOWN    = 1.2
+PROC_WIDTH  = 320
+PROC_HEIGHT = 240
+
+# ── Converter resultado da nova API para formato compatível ───────────────────
+class _LandmarkWrapper:
+    """Adapta o NormalizedLandmark da nova API para o formato antigo (lm[i].x/y/z)."""
+    def __init__(self, landmarks):
+        self.landmark = landmarks
+
+def _build_wrapper(hand_landmarks_list):
+    """Recebe lista de NormalizedLandmark e retorna wrapper compatível."""
+    return _LandmarkWrapper(hand_landmarks_list)
+
+# ── Inicializar HandLandmarker ────────────────────────────────────────────────
+options = HandLandmarkerOptions(
+    base_options=mp_tasks.BaseOptions(model_asset_path=str(MODEL)),
+    num_hands=2,
+    min_hand_detection_confidence=0.7,
+    min_hand_presence_confidence=0.7,
+    min_tracking_confidence=0.7,
+    running_mode=mp_vision.RunningMode.IMAGE,
+)
 
 log.info("Iniciado (PID %s).", os.getpid())
 
@@ -102,14 +118,7 @@ if not cap.isOpened():
     PIDFILE.unlink(missing_ok=True)
     sys.exit(1)
 
-with mp_hands.Hands(
-    static_image_mode        = False,
-    max_num_hands            = 2,
-    model_complexity         = 0,
-    min_detection_confidence = CONFIDENCE,
-    min_tracking_confidence  = CONFIDENCE,
-) as hands:
-
+with HandLandmarker.create_from_options(options) as landmarker:
     while True:
         loop_start = time.monotonic()
 
@@ -129,22 +138,28 @@ with mp_hands.Hands(
         if frame_count % SKIP_FRAMES != 0:
             continue
 
+        # Pré-processar
         small = cv2.resize(frame, (PROC_WIDTH, PROC_HEIGHT))
         small = cv2.flip(small, 1)
         rgb   = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
-        rgb.flags.writeable = False
-        result              = hands.process(rgb)
-        rgb.flags.writeable = True
+
+        # Detectar com nova API
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        result   = landmarker.detect(mp_image)
 
         now = time.monotonic()
 
-        if result.multi_hand_landmarks:
-            hands_list = result.multi_hand_landmarks
+        if result.hand_landmarks:
+            hands_list = result.hand_landmarks  # lista de listas de NormalizedLandmark
 
+            # Alimentar zoom se duas mãos
             if len(hands_list) == 2:
-                dynamic.update_two_hands(hands_list[0], hands_list[1])
+                dynamic.update_two_hands(
+                    _build_wrapper(hands_list[0]),
+                    _build_wrapper(hands_list[1]),
+                )
 
-            hand = hands_list[0]
+            hand = _build_wrapper(hands_list[0])
             dynamic.update(hand)
 
             if now - last_action > COOLDOWN:
