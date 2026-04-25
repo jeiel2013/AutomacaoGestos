@@ -60,3 +60,194 @@
 2026-04-23 18:20:01 [INFO] Estático:  DELETAR                   → ['KEY', 'delete']
 2026-04-23 18:20:02 [INFO] Estático:  DELETAR                   → ['KEY', 'delete']
 2026-04-23 18:20:04 [INFO] Estático:  DELETAR                   → ['KEY', 'delete']
+2026-04-24 22:45:32 [INFO] Iniciado (PID 26149).
+2026-04-24 22:45:38 [INFO] Encerrando (sinal 2).
+2026-04-25 12:20:22 [INFO] Iniciado (PID 10654).
+2026-04-25 12:20:24 [INFO] Estático : WORKSPACE_DIR             → ['KEY', 'super+ctrl+right']
+2026-04-25 12:20:36 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:20:37 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:40 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:41 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:20:43 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:20:44 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:20:45 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:46 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:47 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:49 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:50 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:20:51 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:20:52 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:20:54 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:20:55 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:20:56 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:20:57 [INFO] Dinâmico : SWIPE_RAPIDO_BAIXO        → ['KEY', 'super+down']
+2026-04-25 12:20:58 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:00 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:21:01 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:21:02 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:03 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:05 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:06 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:07 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:11 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 12:21:12 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 12:21:14 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 12:21:20 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:21:22 [INFO] Estático : WORKSPACE_DIR             → ['KEY', 'super+ctrl+right']
+2026-04-25 12:21:23 [INFO] Estático : TROCAR_JANELA             → ['KEY', 'alt+tab']
+2026-04-25 12:21:25 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:21:29 [INFO] Dinâmico : SWIPE_RAPIDO_BAIXO        → ['KEY', 'super+down']
+2026-04-25 12:21:31 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:21:34 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:21:42 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:21:43 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:21:45 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:21:52 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:21:53 [INFO] Aguardando confirmação para: REFAZER
+2026-04-25 12:22:01 [INFO] Estático : CONFIRMAR                 → ['KEY', 'enter']
+2026-04-25 12:22:02 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:22:03 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:22:04 [INFO] Dinâmico : SWIPE_RAPIDO_BAIXO        → ['KEY', 'super+down']
+2026-04-25 12:22:06 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:07 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:08 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:09 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:13 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:14 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:15 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:17 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:18 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:20 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:21 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:22 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 12:22:23 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:24 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:26 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:30 [INFO] Estático : NOVA_ABA                  → ['KEY', 'ctrl+t']
+2026-04-25 12:22:34 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:35 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:37 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:39 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:40 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:22:41 [INFO] Dinâmico : TILT_DIREITA              → ['KEY', 'super+ctrl+right']
+2026-04-25 12:22:43 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:46 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:47 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:48 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:50 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:51 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:52 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 12:22:54 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:55 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:56 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:57 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:22:58 [INFO] Estático : SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-25 12:23:00 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:23:01 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:23:02 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:23:03 [INFO] Estático : NOVA_ABA                  → ['KEY', 'ctrl+t']
+2026-04-25 12:23:11 [INFO] Dinâmico : SWIPE_RAPIDO_BAIXO        → ['KEY', 'super+down']
+2026-04-25 12:23:13 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:14 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:15 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:23:16 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:23:17 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 12:23:19 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 12:23:24 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 12:23:25 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:26 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:27 [INFO] Estático : TROCAR_JANELA             → ['KEY', 'alt+tab']
+2026-04-25 12:23:29 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:30 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:32 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 12:23:33 [INFO] Estático : TROCAR_JANELA             → ['KEY', 'alt+tab']
+2026-04-25 12:23:34 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:23:38 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 12:23:39 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:23:40 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:23:41 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:24:07 [INFO] Estático : MAXIMIZAR                 → ['KEY', 'super+up']
+2026-04-25 12:24:09 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 12:24:10 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 12:24:11 [INFO] Encerrando (sinal 15).
+2026-04-25 16:18:23 [INFO] Iniciado (PID 23439).
+2026-04-25 16:18:25 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:18:26 [INFO] Dinâmico : SWIPE_RAPIDO_ESQUERDA     → ['KEY', 'ctrl+shift+tab']
+2026-04-25 16:18:28 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:18:29 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:18:31 [INFO] Estático : NOVA_ABA                  → ['KEY', 'ctrl+t']
+2026-04-25 16:18:32 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 16:18:33 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:18:34 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:18:36 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:18:39 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:18:40 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:18:41 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 16:18:43 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:18:44 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:18:45 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:18:46 [INFO] Dinâmico : TILT_DIREITA              → ['KEY', 'super+ctrl+right']
+2026-04-25 16:18:47 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:49 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:51 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:52 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:55 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:56 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:18:57 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:11 [INFO] Encerrando (sinal 2).
+2026-04-25 16:19:14 [INFO] Iniciado (PID 23582).
+2026-04-25 16:19:17 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:19 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:21 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:35 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:36 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:49 [INFO] Encerrando (sinal 2).
+2026-04-25 16:19:53 [INFO] Iniciado (PID 23702).
+2026-04-25 16:19:56 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 16:19:58 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:19:59 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:20:00 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:20:02 [INFO] Encerrando (sinal 2).
+2026-04-25 16:20:43 [INFO] Iniciado (PID 23844).
+2026-04-25 16:20:45 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:20:46 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:20:48 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:20:49 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:20:50 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:20:54 [INFO] Cancelado: FECHAR_ABA
+2026-04-25 16:20:56 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:20:59 [INFO] Cancelado: FECHAR_ABA
+2026-04-25 16:21:00 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 16:21:02 [INFO] Cancelado: DESFAZER
+2026-04-25 16:21:03 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 16:21:06 [INFO] Cancelado: DESFAZER
+2026-04-25 16:21:08 [INFO] Dinâmico : SWIPE_RAPIDO_ESQUERDA     → ['KEY', 'ctrl+shift+tab']
+2026-04-25 16:21:09 [INFO] Aguardando confirmação para: DESFAZER
+2026-04-25 16:21:11 [INFO] Cancelado: DESFAZER
+2026-04-25 16:21:14 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 16:21:15 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:21:17 [INFO] Cancelado: FECHAR_JANELA
+2026-04-25 16:21:17 [INFO] Confirmação: CANCELADA via punho
+2026-04-25 16:21:24 [INFO] Encerrando (sinal 2).
+2026-04-25 16:24:32 [INFO] Iniciado (PID 24232).
+2026-04-25 16:24:36 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-25 16:24:38 [INFO] Estático : CONFIRMAR                 → ['KEY', 'enter']
+2026-04-25 16:24:40 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:24:41 [INFO] Cancelado: FECHAR_JANELA
+2026-04-25 16:24:42 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:24:45 [INFO] Cancelado: FECHAR_JANELA
+2026-04-25 16:24:45 [INFO] Aguardando confirmação para: FECHAR_ABA
+2026-04-25 16:24:48 [INFO] Cancelado: FECHAR_ABA
+2026-04-25 16:24:48 [INFO] Confirmação: CANCELADA via punho
+2026-04-25 16:24:50 [INFO] Aguardando confirmação para: SELECIONAR_TUDO
+2026-04-25 16:24:55 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-25 16:24:55 [INFO] Dinâmico : SWIPE_RAPIDO_DIREITA      → ['KEY', 'ctrl+tab']
+2026-04-25 16:24:57 [INFO] Aguardando confirmação para: DELETAR
+2026-04-25 16:25:00 [INFO] Cancelado: DELETAR
+2026-04-25 16:25:00 [INFO] Confirmação: CANCELADA via punho
+2026-04-25 16:25:01 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:25:06 [INFO] Cancelado: FECHAR_JANELA
+2026-04-25 16:25:06 [INFO] Dinâmico : FIGURE_EIGHT              → ['KEY', 'super+a']
+2026-04-25 16:25:08 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-25 16:25:09 [INFO] Aguardando confirmação para: FECHAR_JANELA
+2026-04-25 16:25:12 [INFO] Encerrando (sinal 2).

@@ -58,6 +58,20 @@ QUIT.unlink(missing_ok=True)
 # ── Módulos de gestos ─────────────────────────────────────────────────────────
 from gestures import static, dynamic, keyboard
 import confirm_dialog
+import overlay
+
+# ── Loop GTK em thread separada (necessário para overlay e confirm_dialog) ────
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GLib
+
+def _start_gtk_loop():
+    """Roda o main loop GTK numa thread daemon — não bloqueia o loop principal."""
+    GLib.threads_init()
+    Gtk.main()
+
+_gtk_thread = threading.Thread(target=_start_gtk_loop, daemon=True)
+_gtk_thread.start()
 
 # ── Encerramento gracioso ─────────────────────────────────────────────────────
 cap = None
@@ -112,10 +126,12 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
             else:
                 log.info("Cancelado: %s", gesture_name)
 
+        overlay.show(gesture_name, gesture_type)
         confirm_dialog.show(gesture_name, on_result)
         return True
 
     # Gesto normal → executar direto
+    overlay.show(gesture_name, gesture_type)
     run_action(cmd)
     log.info(
         "%s: %-25s → %s",
