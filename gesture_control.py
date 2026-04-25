@@ -3,6 +3,7 @@
 gesture_control.py
 ------------------
 Processo principal — usa a nova API mediapipe.tasks (0.10.13+).
+Gestos destrutivos exigem confirmação via confirm_dialog.py.
 """
 
 import cv2
@@ -12,6 +13,7 @@ import signal
 import sys
 import json
 import os
+import threading
 from pathlib import Path
 
 import mediapipe as mp
@@ -20,13 +22,13 @@ from mediapipe.tasks.python import vision as mp_vision
 from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-BASE      = Path(__file__).parent
-CONFIG    = BASE / "gestures" / "custom.json"
-LOGFILE   = BASE / "gesture.log"
-MODEL     = BASE / "hand_landmarker.task"
-PIDFILE   = Path("/tmp/gesture-control.pid")
-PAUSE     = Path("/tmp/gesture-control.pause")
-QUIT      = Path("/tmp/gesture-control.quit")
+BASE    = Path(__file__).parent
+CONFIG  = BASE / "gestures" / "custom.json"
+LOGFILE = BASE / "gesture.log"
+MODEL   = BASE / "hand_landmarker.task"
+PIDFILE = Path("/tmp/gesture-control.pid")
+PAUSE   = Path("/tmp/gesture-control.pause")
+QUIT    = Path("/tmp/gesture-control.quit")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -40,29 +42,28 @@ log = logging.getLogger()
 # ── Verificações iniciais ─────────────────────────────────────────────────────
 if not MODEL.exists():
     log.error("Modelo não encontrado: %s", MODEL)
-    log.error("Execute: wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task -O hand_landmarker.task")
     sys.exit(1)
 
 try:
     with open(CONFIG, encoding="utf-8") as f:
         ACTION_MAP = json.load(f)
-except FileNotFoundError:
-    log.error("custom.json não encontrado em %s", CONFIG)
-    sys.exit(1)
-except json.JSONDecodeError as ex:
-    log.error("Erro de sintaxe no custom.json: %s", ex)
+except (FileNotFoundError, json.JSONDecodeError) as ex:
+    log.error("Erro ao carregar custom.json: %s", ex)
     sys.exit(1)
 
 # ── PID ───────────────────────────────────────────────────────────────────────
 PIDFILE.write_text(str(os.getpid()))
 QUIT.unlink(missing_ok=True)
 
+# ── Módulos de gestos ─────────────────────────────────────────────────────────
+from gestures import static, dynamic, keyboard
+import confirm_dialog
+
 # ── Encerramento gracioso ─────────────────────────────────────────────────────
 cap = None
 
 def shutdown(sig=None, frame=None):
     log.info("Encerrando (sinal %s).", sig)
-    from gestures import keyboard
     keyboard.close()
     if cap is not None:
         cap.release()
@@ -73,11 +74,63 @@ def shutdown(sig=None, frame=None):
 signal.signal(signal.SIGTERM, shutdown)
 signal.signal(signal.SIGINT,  shutdown)
 
-# ── Módulos de gestos ─────────────────────────────────────────────────────────
-from gestures import static, dynamic, keyboard
-
+# ── Executar ação ─────────────────────────────────────────────────────────────
 def run_action(cmd: list):
     keyboard.dispatch(cmd)
+
+# ── Processar gesto detectado ─────────────────────────────────────────────────
+def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
+    """
+    Processa um gesto detectado.
+    Se o gesto exige confirmação, abre o diálogo e aguarda.
+    Retorna True se uma ação foi disparada.
+    """
+    # Se há diálogo pendente: Joinha confirma, punho cancela
+    if confirm_dialog.has_pending():
+        if gesture_name == "CONFIRMAR":
+            confirm_dialog.confirm_current()
+            log.info("Confirmação: ACEITA via gesto Joinha")
+            return True
+        elif gesture_name == "FECHAR_JANELA":
+            confirm_dialog.cancel_current()
+            log.info("Confirmação: CANCELADA via punho")
+            return True
+        return False  # qualquer outro gesto é ignorado enquanto aguarda
+
+    cmd = ACTION_MAP[gesture_type].get(gesture_name)
+    if not cmd:
+        return False
+
+    # Gesto destrutivo → pedir confirmação
+    if confirm_dialog.needs_confirmation(gesture_name):
+        log.info("Aguardando confirmação para: %s", gesture_name)
+
+        def on_result(confirmed: bool):
+            if confirmed:
+                run_action(cmd)
+                log.info("Executado após confirmação: %-25s → %s", gesture_name, cmd)
+            else:
+                log.info("Cancelado: %s", gesture_name)
+
+        confirm_dialog.show(gesture_name, on_result)
+        return True
+
+    # Gesto normal → executar direto
+    run_action(cmd)
+    log.info(
+        "%s: %-25s → %s",
+        "Dinâmico " if gesture_type == "dynamic" else "Estático ",
+        gesture_name, cmd,
+    )
+    return True
+
+# ── Wrapper de landmarks ──────────────────────────────────────────────────────
+class _LandmarkWrapper:
+    def __init__(self, landmarks):
+        self.landmark = landmarks
+
+def _wrap(lms):
+    return _LandmarkWrapper(lms)
 
 # ── Configurações de CPU ──────────────────────────────────────────────────────
 SKIP_FRAMES = 2
@@ -87,17 +140,7 @@ COOLDOWN    = 1.2
 PROC_WIDTH  = 320
 PROC_HEIGHT = 240
 
-# ── Converter resultado da nova API para formato compatível ───────────────────
-class _LandmarkWrapper:
-    """Adapta o NormalizedLandmark da nova API para o formato antigo (lm[i].x/y/z)."""
-    def __init__(self, landmarks):
-        self.landmark = landmarks
-
-def _build_wrapper(hand_landmarks_list):
-    """Recebe lista de NormalizedLandmark e retorna wrapper compatível."""
-    return _LandmarkWrapper(hand_landmarks_list)
-
-# ── Inicializar HandLandmarker ────────────────────────────────────────────────
+# ── HandLandmarker ────────────────────────────────────────────────────────────
 options = HandLandmarkerOptions(
     base_options=mp_tasks.BaseOptions(model_asset_path=str(MODEL)),
     num_hands=2,
@@ -114,7 +157,7 @@ last_action = 0.0
 frame_count = 0
 
 if not cap.isOpened():
-    log.error("Câmera não encontrada. Verifique /dev/video*")
+    log.error("Câmera não encontrada.")
     PIDFILE.unlink(missing_ok=True)
     sys.exit(1)
 
@@ -138,46 +181,33 @@ with HandLandmarker.create_from_options(options) as landmarker:
         if frame_count % SKIP_FRAMES != 0:
             continue
 
-        # Pré-processar
-        small = cv2.resize(frame, (PROC_WIDTH, PROC_HEIGHT))
-        small = cv2.flip(small, 1)
-        rgb   = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
-
-        # Detectar com nova API
+        small    = cv2.resize(frame, (PROC_WIDTH, PROC_HEIGHT))
+        small    = cv2.flip(small, 1)
+        rgb      = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
         result   = landmarker.detect(mp_image)
 
         now = time.monotonic()
 
         if result.hand_landmarks:
-            hands_list = result.hand_landmarks  # lista de listas de NormalizedLandmark
+            hands_list = result.hand_landmarks
 
-            # Alimentar zoom se duas mãos
             if len(hands_list) == 2:
-                dynamic.update_two_hands(
-                    _build_wrapper(hands_list[0]),
-                    _build_wrapper(hands_list[1]),
-                )
+                dynamic.update_two_hands(_wrap(hands_list[0]), _wrap(hands_list[1]))
 
-            hand = _build_wrapper(hands_list[0])
+            hand = _wrap(hands_list[0])
             dynamic.update(hand)
 
             if now - last_action > COOLDOWN:
                 dyn = dynamic.classify()
                 if dyn:
-                    cmd = ACTION_MAP["dynamic"].get(dyn)
-                    if cmd:
-                        run_action(cmd)
-                        log.info("Dinâmico: %-25s → %s", dyn, cmd)
+                    if handle_gesture(dyn, "dynamic"):
                         last_action = now
                         dynamic.reset()
                 else:
                     sta = static.classify(hand)
                     if sta:
-                        cmd = ACTION_MAP["static"].get(sta)
-                        if cmd:
-                            run_action(cmd)
-                            log.info("Estático:  %-25s → %s", sta, cmd)
+                        if handle_gesture(sta, "static"):
                             last_action = now
                             dynamic.reset()
 
