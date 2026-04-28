@@ -316,3 +316,23 @@
 2026-04-27 21:56:44 [INFO] Encerrando (sinal 2).
 2026-04-27 21:56:44 [INFO] Confirmação via botão: Selecionar Tudo → CANCELADA
 2026-04-27 21:56:44 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-27 21:58:31 [INFO] Iniciado (PID 18694).
+2026-04-27 21:58:34 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:58:35 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:58:37 [INFO] Estático: CONFIRMAR                 → ['KEY', 'enter']
+2026-04-27 21:58:38 [INFO] Estático: CONFIRMAR                 → ['KEY', 'enter']
+2026-04-27 21:58:39 [INFO] Encerrando (sinal 2).
+2026-04-27 21:58:51 [INFO] Iniciado (PID 18843).
+2026-04-27 21:58:53 [INFO] Aguardando confirmação: FECHAR_JANELA
+2026-04-27 21:58:54 [INFO] Confirmação via gesto Joinha: FECHAR_JANELA → ACEITA
+2026-04-27 21:58:54 [INFO] Executado após confirmação: FECHAR_JANELA → ['KEY', 'alt+F4']
+2026-04-27 21:58:54 [INFO] Confirmação: ACEITA via Joinha
+2026-04-27 22:07:04 [INFO] Iniciado (PID 19963).
+2026-04-27 22:07:09 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 22:07:14 [INFO] Confirmação timeout: SELECIONAR_TUDO → CANCELADA
+2026-04-27 22:07:14 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-27 22:07:20 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 22:07:21 [INFO] Aguardando confirmação: DESFAZER
+2026-04-27 22:07:26 [INFO] Encerrando (sinal 2).
+2026-04-27 22:07:26 [INFO] Confirmação via botão: Desfazer → CANCELADA
+2026-04-27 22:07:26 [INFO] Cancelado: DESFAZER

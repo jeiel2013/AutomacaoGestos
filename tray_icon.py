@@ -52,11 +52,10 @@ def _find_emoji_font() -> ImageFont.FreeTypeFont | None:
 
 _EMOJI_FONT = _find_emoji_font()
 
-# O AppIndicator3 no GNOME escala o ícone pela ALTURA do PNG.
-# Estratégia: gerar ambos os ícones (normal e com emoji) com a MESMA altura
-# e larguras diferentes. A bandeja vai manter a altura fixa e alargar
-# automaticamente quando o ícone com emoji for maior.
-_SZ = 48   # altura base — alta o suficiente para o emoji não pixelar
+# Tamanho fixo dos ícones — AppIndicator escala pela altura do PNG
+# Normal: S×S | Com emoji: (S + GAP + S)×S
+_SZ  = 64    # altura e largura do círculo (bandeja escala para ~22px na tela)
+_GAP = 6     # espaço entre círculo e emoji
 
 def _emoji_font(size: int):
     for fp in [
@@ -71,50 +70,60 @@ def _emoji_font(size: int):
                 pass
     return None
 
+def _cleanup_old_icons():
+    """Remove ícones temporários de versões anteriores."""
+    import glob
+    for f in glob.glob("/tmp/gc_icon_*.png"):
+        try:
+            Path(f).unlink()
+        except Exception:
+            pass
+
+def _draw_circle(draw, x, y, S, color):
+    draw.ellipse([x, y, x + S - 1, y + S - 1], fill=color)
+    m = S // 5
+    draw.ellipse([x + m, y + m, x + S - 1 - m, y + S - 1 - m],
+                 fill=(255, 255, 255, 200))
+
 def _make_icon(color: tuple, name: str, emoji: str = "") -> str:
     """
-    Normal:    _SZ × _SZ  — círculo perfeito
-    Com emoji: (_SZ*2+8) × _SZ — círculo fixo + gap + emoji lado a lado
-    Ambos com a mesma altura, então a bandeja só alarga quando tem emoji.
+    Normal:    64×64   — círculo perfeito, bandeja escala para ~22px
+    Com emoji: 134×64  — círculo fixo à esquerda + emoji à direita
+    Mesma altura nos dois casos → bandeja mantém bolinha do mesmo tamanho
+    e só alarga o espaço quando emoji aparece.
     """
     key = f"{name}_{emoji}"
     if key in _icon_cache:
         return _icon_cache[key]
 
     S = _SZ
-    pad = 4   # gap entre círculo e emoji
 
     if emoji:
-        W    = S + pad + S + 4      # círculo | gap | área emoji
+        W   = S + _GAP + S          # 64 + 6 + 64 = 134px de largura
         img  = Image.new("RGBA", (W, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
 
-        # Círculo — ocupa exatamente S×S no lado esquerdo
-        draw.ellipse([0, 0, S-1, S-1], fill=color)
-        m = S // 5
-        draw.ellipse([m, m, S-1-m, S-1-m], fill=(255, 255, 255, 200))
+        # Círculo à esquerda — sempre S×S
+        _draw_circle(draw, 0, 0, S, color)
 
-        # Emoji — centralizado verticalmente na metade direita
-        font = _emoji_font(S - 4)
-        x    = S + pad
+        # Emoji à direita — centralizado verticalmente
+        font = _emoji_font(S - 8)
+        x    = S + _GAP
         if font:
             try:
-                # Medir altura real do emoji para centralizar
                 bbox = font.getbbox(emoji)
                 ey   = (S - (bbox[3] - bbox[1])) // 2 - bbox[1]
-                draw.text((x, ey), emoji, font=font, embedded_color=True)
+                draw.text((x, max(0, ey)), emoji, font=font, embedded_color=True)
             except Exception:
-                draw.text((x, 4), emoji, font=font, embedded_color=True)
+                draw.text((x, S // 8), emoji, font=font, embedded_color=True)
         else:
             draw.text((x, S // 4), emoji, fill=(255, 255, 255, 255))
 
     else:
-        # Ícone normal — quadrado perfeito
+        # Ícone normal — exatamente S×S
         img  = Image.new("RGBA", (S, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        draw.ellipse([0, 0, S-1, S-1], fill=color)
-        m = S // 5
-        draw.ellipse([m, m, S-1-m, S-1-m], fill=(255, 255, 255, 200))
+        _draw_circle(draw, 0, 0, S, color)
 
     tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False, prefix="gc_icon_")
     img.save(tmp.name)
@@ -293,6 +302,7 @@ def watchdog(indicator: GestureIndicator):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
+    _cleanup_old_icons()
     if not get_pid():
         start_daemon()
 
