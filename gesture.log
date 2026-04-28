@@ -293,3 +293,26 @@
 2026-04-27 21:50:36 [INFO] Cancelado: FECHAR_ABA
 2026-04-27 21:50:40 [INFO] Dinâmico: SWIPE_RAPIDO_ESQUERDA     → ['KEY', 'ctrl+shift+tab']
 2026-04-27 21:50:46 [INFO] Encerrando (sinal 2).
+2026-04-27 21:53:23 [INFO] Iniciado (PID 16537).
+2026-04-27 21:53:25 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 21:53:27 [INFO] Confirmação via gesto Punho: SELECIONAR_TUDO → CANCELADA
+2026-04-27 21:53:27 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-27 21:53:27 [INFO] Confirmação: CANCELADA via Punho
+2026-04-27 21:53:28 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:53:30 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:53:32 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:53:33 [INFO] Estático: SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-27 21:53:34 [INFO] Estático: SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-27 21:53:35 [INFO] Estático: SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-27 21:53:37 [INFO] Estático: SCROLL_BAIXO              → ['SCROLL', 'down']
+2026-04-27 21:53:39 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 21:53:44 [INFO] Confirmação timeout: SELECIONAR_TUDO → CANCELADA
+2026-04-27 21:53:44 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-27 21:53:44 [INFO] Dinâmico: FIGURE_EIGHT              → ['KEY', 'super+a']
+2026-04-27 21:56:36 [INFO] Iniciado (PID 18364).
+2026-04-27 21:56:40 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:56:41 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:56:42 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 21:56:44 [INFO] Encerrando (sinal 2).
+2026-04-27 21:56:44 [INFO] Confirmação via botão: Selecionar Tudo → CANCELADA
+2026-04-27 21:56:44 [INFO] Cancelado: SELECIONAR_TUDO

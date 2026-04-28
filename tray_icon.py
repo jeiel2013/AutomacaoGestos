@@ -52,55 +52,64 @@ def _find_emoji_font() -> ImageFont.FreeTypeFont | None:
 
 _EMOJI_FONT = _find_emoji_font()
 
-# Tamanho base do ícone — AppIndicator respeita a altura e escala proporcionalmente
-_SZ = 22   # altura em px (igual à bandeja do GNOME)
+# O AppIndicator3 no GNOME escala o ícone pela ALTURA do PNG.
+# Estratégia: gerar ambos os ícones (normal e com emoji) com a MESMA altura
+# e larguras diferentes. A bandeja vai manter a altura fixa e alargar
+# automaticamente quando o ícone com emoji for maior.
+_SZ = 48   # altura base — alta o suficiente para o emoji não pixelar
+
+def _emoji_font(size: int):
+    for fp in [
+        "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+        "/usr/share/fonts/truetype/noto/NotoEmoji-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]:
+        if Path(fp).exists():
+            try:
+                return ImageFont.truetype(fp, size)
+            except Exception:
+                pass
+    return None
 
 def _make_icon(color: tuple, name: str, emoji: str = "") -> str:
     """
-    Gera ícone PNG proporcional à altura da bandeja (22px).
-    Normal:      22×22  — círculo
-    Com emoji:   54×22  — círculo + espaço + emoji (tudo na mesma altura)
+    Normal:    _SZ × _SZ  — círculo perfeito
+    Com emoji: (_SZ*2+8) × _SZ — círculo fixo + gap + emoji lado a lado
+    Ambos com a mesma altura, então a bandeja só alarga quando tem emoji.
     """
     key = f"{name}_{emoji}"
     if key in _icon_cache:
         return _icon_cache[key]
 
-    S = _SZ  # altura e largura do círculo
+    S = _SZ
+    pad = 4   # gap entre círculo e emoji
 
     if emoji:
-        # Largura = círculo (S) + gap (4px) + área do emoji (S+8)
-        W = S + 4 + S + 8
+        W    = S + pad + S + 4      # círculo | gap | área emoji
         img  = Image.new("RGBA", (W, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
 
-        # Círculo perfeitamente quadrado S×S
+        # Círculo — ocupa exatamente S×S no lado esquerdo
         draw.ellipse([0, 0, S-1, S-1], fill=color)
         m = S // 5
         draw.ellipse([m, m, S-1-m, S-1-m], fill=(255, 255, 255, 200))
 
-        # Emoji na metade direita — fonte ajustada para S-2 px
-        try:
-            font = None
-            for fp in [
-                "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
-                "/usr/share/fonts/truetype/noto/NotoEmoji-Regular.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            ]:
-                if Path(fp).exists():
-                    try:
-                        font = ImageFont.truetype(fp, S - 2)
-                        break
-                    except Exception:
-                        pass
-            x_emoji = S + 4
-            if font:
-                draw.text((x_emoji, 1), emoji, font=font, embedded_color=True)
-            else:
-                draw.text((x_emoji, 2), emoji, fill=(255, 255, 255, 255))
-        except Exception:
-            pass
+        # Emoji — centralizado verticalmente na metade direita
+        font = _emoji_font(S - 4)
+        x    = S + pad
+        if font:
+            try:
+                # Medir altura real do emoji para centralizar
+                bbox = font.getbbox(emoji)
+                ey   = (S - (bbox[3] - bbox[1])) // 2 - bbox[1]
+                draw.text((x, ey), emoji, font=font, embedded_color=True)
+            except Exception:
+                draw.text((x, 4), emoji, font=font, embedded_color=True)
+        else:
+            draw.text((x, S // 4), emoji, fill=(255, 255, 255, 255))
+
     else:
-        # Ícone normal quadrado
+        # Ícone normal — quadrado perfeito
         img  = Image.new("RGBA", (S, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         draw.ellipse([0, 0, S-1, S-1], fill=color)
