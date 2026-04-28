@@ -265,3 +265,31 @@
 2026-04-27 21:45:28 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
 2026-04-27 21:45:29 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
 2026-04-27 21:45:31 [INFO] Aguardando confirmação para: DELETAR
+2026-04-27 21:49:52 [INFO] Iniciado (PID 16167).
+2026-04-27 21:49:53 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:49:54 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:49:56 [INFO] Aguardando confirmação: FECHAR_JANELA
+2026-04-27 21:50:01 [INFO] Confirmação timeout: FECHAR_JANELA → CANCELADA
+2026-04-27 21:50:01 [INFO] Cancelado: FECHAR_JANELA
+2026-04-27 21:50:02 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:04 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:05 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:07 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:08 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 21:50:13 [INFO] Confirmação timeout: SELECIONAR_TUDO → CANCELADA
+2026-04-27 21:50:13 [INFO] Cancelado: SELECIONAR_TUDO
+2026-04-27 21:50:13 [INFO] Dinâmico: SWIPE_RAPIDO_ESQUERDA     → ['KEY', 'ctrl+shift+tab']
+2026-04-27 21:50:16 [INFO] Dinâmico: TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-27 21:50:17 [INFO] Dinâmico: TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-27 21:50:20 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:22 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-04-27 21:50:25 [INFO] Confirmação via gesto Joinha: SELECIONAR_TUDO → ACEITA
+2026-04-27 21:50:25 [INFO] Executado após confirmação: SELECIONAR_TUDO → ['KEY', 'ctrl+a']
+2026-04-27 21:50:25 [INFO] Confirmação: ACEITA via Joinha
+2026-04-27 21:50:29 [INFO] Dinâmico: TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
+2026-04-27 21:50:30 [INFO] Estático: SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:50:31 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-04-27 21:50:36 [INFO] Confirmação timeout: FECHAR_ABA → CANCELADA
+2026-04-27 21:50:36 [INFO] Cancelado: FECHAR_ABA
+2026-04-27 21:50:40 [INFO] Dinâmico: SWIPE_RAPIDO_ESQUERDA     → ['KEY', 'ctrl+shift+tab']
+2026-04-27 21:50:46 [INFO] Encerrando (sinal 2).

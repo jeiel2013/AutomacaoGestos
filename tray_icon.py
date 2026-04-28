@@ -52,35 +52,60 @@ def _find_emoji_font() -> ImageFont.FreeTypeFont | None:
 
 _EMOJI_FONT = _find_emoji_font()
 
+# Tamanho base do ícone — AppIndicator respeita a altura e escala proporcionalmente
+_SZ = 22   # altura em px (igual à bandeja do GNOME)
+
 def _make_icon(color: tuple, name: str, emoji: str = "") -> str:
     """
-    Gera ícone PNG e retorna o caminho.
-    Se emoji fornecido: ícone largo (círculo + emoji).
-    Se não: ícone quadrado normal (só círculo).
+    Gera ícone PNG proporcional à altura da bandeja (22px).
+    Normal:      22×22  — círculo
+    Com emoji:   54×22  — círculo + espaço + emoji (tudo na mesma altura)
     """
     key = f"{name}_{emoji}"
     if key in _icon_cache:
         return _icon_cache[key]
 
+    S = _SZ  # altura e largura do círculo
+
     if emoji:
-        # Ícone largo: 80×32 — círculo à esquerda, emoji à direita
-        img  = Image.new("RGBA", (80, 32), (0, 0, 0, 0))
+        # Largura = círculo (S) + gap (4px) + área do emoji (S+8)
+        W = S + 4 + S + 8
+        img  = Image.new("RGBA", (W, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        draw.ellipse([2, 2, 28, 28], fill=color)
-        draw.ellipse([9, 9, 21, 21], fill=(255, 255, 255, 200))
+
+        # Círculo perfeitamente quadrado S×S
+        draw.ellipse([0, 0, S-1, S-1], fill=color)
+        m = S // 5
+        draw.ellipse([m, m, S-1-m, S-1-m], fill=(255, 255, 255, 200))
+
+        # Emoji na metade direita — fonte ajustada para S-2 px
         try:
-            if _EMOJI_FONT:
-                draw.text((32, 4), emoji, font=_EMOJI_FONT, embedded_color=True)
+            font = None
+            for fp in [
+                "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+                "/usr/share/fonts/truetype/noto/NotoEmoji-Regular.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            ]:
+                if Path(fp).exists():
+                    try:
+                        font = ImageFont.truetype(fp, S - 2)
+                        break
+                    except Exception:
+                        pass
+            x_emoji = S + 4
+            if font:
+                draw.text((x_emoji, 1), emoji, font=font, embedded_color=True)
             else:
-                draw.text((32, 7), emoji, fill=(255, 255, 255, 255))
+                draw.text((x_emoji, 2), emoji, fill=(255, 255, 255, 255))
         except Exception:
             pass
     else:
-        # Ícone normal: 32×32
-        img  = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        # Ícone normal quadrado
+        img  = Image.new("RGBA", (S, S), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
-        draw.ellipse([2, 2, 30, 30], fill=color)
-        draw.ellipse([10, 10, 22, 22], fill=(255, 255, 255, 200))
+        draw.ellipse([0, 0, S-1, S-1], fill=color)
+        m = S // 5
+        draw.ellipse([m, m, S-1-m, S-1-m], fill=(255, 255, 255, 200))
 
     tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False, prefix="gc_icon_")
     img.save(tmp.name)
