@@ -251,3 +251,11 @@
 2026-04-25 16:25:08 [INFO] Dinâmico : TILT_ESQUERDA             → ['KEY', 'super+ctrl+left']
 2026-04-25 16:25:09 [INFO] Aguardando confirmação para: FECHAR_JANELA
 2026-04-25 16:25:12 [INFO] Encerrando (sinal 2).
+2026-04-27 21:39:53 [INFO] Iniciado (PID 14953).
+2026-04-27 21:39:55 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:39:58 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:40:00 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:40:02 [INFO] Aguardando confirmação para: DELETAR
+2026-04-27 21:40:04 [INFO] Confirmação via gesto Joinha: DELETAR → ACEITA
+2026-04-27 21:40:04 [INFO] Executado após confirmação: DELETAR                   → ['KEY', 'delete']
+2026-04-27 21:40:04 [INFO] Confirmação: ACEITA via gesto Joinha
