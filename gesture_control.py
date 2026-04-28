@@ -2,8 +2,9 @@
 """
 gesture_control.py
 ------------------
-Processo principal — usa a nova API mediapipe.tasks (0.10.13+).
-Gestos destrutivos exigem confirmação via confirm_dialog.py.
+Daemon principal — detecta gestos via câmera e executa ações.
+Usa mediapipe.tasks (0.10.13+) e evdev para envio de teclas.
+Sinaliza o tray_icon.py via arquivo IPC para piscar o emoji no ícone.
 """
 
 import cv2
@@ -22,13 +23,13 @@ from mediapipe.tasks.python import vision as mp_vision
 from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-BASE    = Path(__file__).parent
-CONFIG  = BASE / "gestures" / "custom.json"
-LOGFILE = BASE / "gesture.log"
-MODEL   = BASE / "hand_landmarker.task"
-PIDFILE = Path("/tmp/gesture-control.pid")
-PAUSE   = Path("/tmp/gesture-control.pause")
-QUIT    = Path("/tmp/gesture-control.quit")
+BASE           = Path(__file__).parent
+CONFIG         = BASE / "gestures" / "custom.json"
+LOGFILE        = BASE / "gesture.log"
+MODEL          = BASE / "hand_landmarker.task"
+PIDFILE        = Path("/tmp/gesture-control.pid")
+PAUSE          = Path("/tmp/gesture-control.pause")
+QUIT           = Path("/tmp/gesture-control.quit")
 GESTURE_SIGNAL = Path("/tmp/gesture-control.gesture")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -56,7 +57,11 @@ except (FileNotFoundError, json.JSONDecodeError) as ex:
 PIDFILE.write_text(str(os.getpid()))
 QUIT.unlink(missing_ok=True)
 
-# ── Emojis dos gestos (para sinalizar o tray) ────────────────────────────────
+# ── Módulos de gestos ─────────────────────────────────────────────────────────
+from gestures import static, dynamic, keyboard
+import confirm_dialog
+
+# ── Emojis dos gestos (IPC com o tray) ───────────────────────────────────────
 GESTURE_EMOJI = {
     "FECHAR_JANELA":"🪟","SCROLL_CIMA":"⬆️","SCROLL_BAIXO":"⬇️",
     "SELECIONAR_TUDO":"📋","DELETAR":"🗑️","CONFIRMAR":"👍","VOLTAR":"↩️",
@@ -71,17 +76,12 @@ GESTURE_EMOJI = {
 }
 
 def _signal_tray(gesture_name: str):
-    """Escreve o emoji no arquivo IPC para o tray_icon.py piscar o ícone."""
+    """Escreve emoji no arquivo IPC — tray_icon.py lê e pisca o ícone."""
     emoji = GESTURE_EMOJI.get(gesture_name, "✋")
     try:
         GESTURE_SIGNAL.write_text(emoji)
     except Exception:
         pass
-
-# ── Módulos de gestos ─────────────────────────────────────────────────────────
-from gestures import static, dynamic, keyboard
-import confirm_dialog
-
 
 # ── Encerramento gracioso ─────────────────────────────────────────────────────
 cap = None
@@ -102,53 +102,53 @@ signal.signal(signal.SIGINT,  shutdown)
 def run_action(cmd: list):
     keyboard.dispatch(cmd)
 
-# ── Processar gesto detectado ─────────────────────────────────────────────────
+# ── Processar gesto ───────────────────────────────────────────────────────────
 def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
-    """
-    Processa um gesto detectado.
-    Se o gesto exige confirmação, abre o diálogo e aguarda.
-    Retorna True se uma ação foi disparada.
-    """
-    # Se há diálogo pendente: Joinha confirma, punho cancela
+    """Processa gesto — com confirmação se necessário."""
+
+    # Diálogo pendente: Joinha confirma, punho cancela
     if confirm_dialog.has_pending():
         if gesture_name == "CONFIRMAR":
             confirm_dialog.confirm_current()
-            log.info("Confirmação: ACEITA via gesto Joinha")
+            log.info("Confirmação: ACEITA via Joinha")
             return True
         elif gesture_name == "FECHAR_JANELA":
             confirm_dialog.cancel_current()
-            log.info("Confirmação: CANCELADA via punho")
+            log.info("Confirmação: CANCELADA via Punho")
             return True
-        return False  # qualquer outro gesto é ignorado enquanto aguarda
+        return False
 
     cmd = ACTION_MAP[gesture_type].get(gesture_name)
     if not cmd:
         return False
 
-    # Gesto destrutivo → pedir confirmação
+    # Sinaliza tray sempre que um gesto é reconhecido
+    _signal_tray(gesture_name)
+
+    # Gesto destrutivo → confirmação antes de executar
     if confirm_dialog.needs_confirmation(gesture_name):
-        _signal_tray(gesture_name)
-        log.info("Aguardando confirmação para: %s", gesture_name)
+        log.info("Aguardando confirmação: %s", gesture_name)
 
         def on_result(confirmed: bool):
             if confirmed:
                 run_action(cmd)
-                log.info("Executado após confirmação: %-25s → %s", gesture_name, cmd)
+                log.info("Executado após confirmação: %s → %s", gesture_name, cmd)
             else:
                 log.info("Cancelado: %s", gesture_name)
 
-        overlay.show(gesture_name, gesture_type)
-        confirm_dialog.show(gesture_name, on_result)
+        # Roda em thread separada para não bloquear o loop da câmera
+        threading.Thread(
+            target=confirm_dialog.show,
+            args=(gesture_name, on_result),
+            daemon=True,
+        ).start()
         return True
 
-    # Gesto normal → executar direto
-    _signal_tray(gesture_name)
-    run_action(cmd)
-    log.info(
-        "%s: %-25s → %s",
-        "Dinâmico " if gesture_type == "dynamic" else "Estático ",
-        gesture_name, cmd,
-    )
+    # Gesto normal → executar direto em thread para não travar câmera
+    threading.Thread(target=run_action, args=(cmd,), daemon=True).start()
+    log.info("%s: %-25s → %s",
+             "Dinâmico" if gesture_type == "dynamic" else "Estático",
+             gesture_name, cmd)
     return True
 
 # ── Wrapper de landmarks ──────────────────────────────────────────────────────
@@ -206,6 +206,11 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         frame_count += 1
         if frame_count % SKIP_FRAMES != 0:
+            # Throttle — dorme o restante do frame mesmo quando pula
+            elapsed = time.monotonic() - loop_start
+            sleep_t = FRAME_DELAY - elapsed
+            if sleep_t > 0:
+                time.sleep(sleep_t)
             continue
 
         small    = cv2.resize(frame, (PROC_WIDTH, PROC_HEIGHT))
@@ -220,7 +225,10 @@ with HandLandmarker.create_from_options(options) as landmarker:
             hands_list = result.hand_landmarks
 
             if len(hands_list) == 2:
-                dynamic.update_two_hands(_wrap(hands_list[0]), _wrap(hands_list[1]))
+                dynamic.update_two_hands(
+                    _wrap(hands_list[0]),
+                    _wrap(hands_list[1]),
+                )
 
             hand = _wrap(hands_list[0])
             dynamic.update(hand)
