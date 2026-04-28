@@ -259,3 +259,9 @@
 2026-04-27 21:40:04 [INFO] Confirmação via gesto Joinha: DELETAR → ACEITA
 2026-04-27 21:40:04 [INFO] Executado após confirmação: DELETAR                   → ['KEY', 'delete']
 2026-04-27 21:40:04 [INFO] Confirmação: ACEITA via gesto Joinha
+2026-04-27 21:45:08 [INFO] Iniciado (PID 15677).
+2026-04-27 21:45:10 [INFO] Aguardando confirmação para: DELETAR
+2026-04-27 21:45:25 [INFO] Iniciado (PID 15758).
+2026-04-27 21:45:28 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:45:29 [INFO] Estático : SCROLL_CIMA               → ['SCROLL', 'up']
+2026-04-27 21:45:31 [INFO] Aguardando confirmação para: DELETAR

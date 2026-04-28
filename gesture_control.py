@@ -29,6 +29,7 @@ MODEL   = BASE / "hand_landmarker.task"
 PIDFILE = Path("/tmp/gesture-control.pid")
 PAUSE   = Path("/tmp/gesture-control.pause")
 QUIT    = Path("/tmp/gesture-control.quit")
+GESTURE_SIGNAL = Path("/tmp/gesture-control.gesture")
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -55,10 +56,31 @@ except (FileNotFoundError, json.JSONDecodeError) as ex:
 PIDFILE.write_text(str(os.getpid()))
 QUIT.unlink(missing_ok=True)
 
+# ── Emojis dos gestos (para sinalizar o tray) ────────────────────────────────
+GESTURE_EMOJI = {
+    "FECHAR_JANELA":"🪟","SCROLL_CIMA":"⬆️","SCROLL_BAIXO":"⬇️",
+    "SELECIONAR_TUDO":"📋","DELETAR":"🗑️","CONFIRMAR":"👍","VOLTAR":"↩️",
+    "TROCAR_JANELA":"🔄","CAPTURA_TELA":"📸","WORKSPACE_DIR":"➡️",
+    "NOVA_ABA":"➕","FECHAR_ABA":"✖️","MAXIMIZAR":"⬛","MINIMIZAR":"▬",
+    "DESFAZER":"↪️","REFAZER":"↩️","SWIPE_DIREITA":"👉","SWIPE_ESQUERDA":"👈",
+    "SWIPE_CIMA":"👆","SWIPE_BAIXO":"👇","SWIPE_RAPIDO_DIREITA":"⚡",
+    "SWIPE_RAPIDO_ESQUERDA":"⚡","SWIPE_RAPIDO_CIMA":"⚡","SWIPE_RAPIDO_BAIXO":"⚡",
+    "SHAKE":"🤝","CIRCLE_CW":"🔃","CIRCLE_CCW":"🔄","FIGURE_EIGHT":"♾️",
+    "WAVE_W":"〰️","ZOOM_IN":"🔍","ZOOM_OUT":"🔎","PUSH_FRENTE":"🫸",
+    "PULL_ATRAS":"🫷","TILT_DIREITA":"↗️","TILT_ESQUERDA":"↖️",
+}
+
+def _signal_tray(gesture_name: str):
+    """Escreve o emoji no arquivo IPC para o tray_icon.py piscar o ícone."""
+    emoji = GESTURE_EMOJI.get(gesture_name, "✋")
+    try:
+        GESTURE_SIGNAL.write_text(emoji)
+    except Exception:
+        pass
+
 # ── Módulos de gestos ─────────────────────────────────────────────────────────
 from gestures import static, dynamic, keyboard
 import confirm_dialog
-import overlay
 
 
 # ── Encerramento gracioso ─────────────────────────────────────────────────────
@@ -105,6 +127,7 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
 
     # Gesto destrutivo → pedir confirmação
     if confirm_dialog.needs_confirmation(gesture_name):
+        _signal_tray(gesture_name)
         log.info("Aguardando confirmação para: %s", gesture_name)
 
         def on_result(confirmed: bool):
@@ -119,7 +142,7 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
         return True
 
     # Gesto normal → executar direto
-    overlay.show(gesture_name, gesture_type)
+    _signal_tray(gesture_name)
     run_action(cmd)
     log.info(
         "%s: %-25s → %s",

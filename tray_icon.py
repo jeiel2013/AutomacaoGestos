@@ -37,6 +37,7 @@ CONFIG  = BASE / "gestures" / "custom.json"
 PIDFILE = Path("/tmp/gesture-control.pid")
 PAUSE   = Path("/tmp/gesture-control.pause")
 QUIT    = Path("/tmp/gesture-control.quit")
+GESTURE_SIGNAL = Path("/tmp/gesture-control.gesture")
 
 PYTHON  = sys.executable   # usa o mesmo python do venv atual
 
@@ -59,6 +60,48 @@ def _make_icon_file(color: tuple, name: str) -> str:
 ICON_ACTIVE  = lambda: _make_icon_file((40, 180, 100), "active")
 ICON_PAUSED  = lambda: _make_icon_file((130, 130, 130), "paused")
 ICON_ERROR   = lambda: _make_icon_file((220, 100, 40), "error")
+
+# Arquivo IPC: gesture_control.py escreve o emoji aqui, tray lê e atualiza ícone
+def _make_gesture_icon(emoji: str) -> str:
+    """Gera ícone largo com círculo verde + emoji do gesto ao lado."""
+    cache_key = f"gesture_{emoji}"
+    if cache_key in _icon_files:
+        return _icon_files[cache_key]
+
+    try:
+        from PIL import ImageFont
+        font = None
+        for fp in [
+            "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]:
+            if Path(fp).exists():
+                try:
+                    font = ImageFont.truetype(fp, 28)
+                    break
+                except Exception:
+                    pass
+
+        # Ícone largo: círculo verde (32px) + emoji (32px) = 80px total
+        img  = Image.new("RGBA", (80, 32), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+
+        # Círculo verde à esquerda
+        draw.ellipse([2, 2, 30, 30], fill=(40, 180, 100))
+        draw.ellipse([10, 10, 22, 22], fill=(255, 255, 255, 200))
+
+        # Emoji à direita
+        if font:
+            draw.text((34, 2), emoji, font=font, embedded_color=True)
+        else:
+            draw.text((34, 6), emoji, fill=(255, 255, 255, 255))
+
+        tmp = tempfile.NamedTemporaryFile(suffix=f"_gesture.png", delete=False)
+        img.save(tmp.name)
+        _icon_files[cache_key] = tmp.name
+        return tmp.name
+    except Exception:
+        return ICON_ACTIVE()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def get_pid() -> int | None:
@@ -178,17 +221,57 @@ class GestureIndicator:
                 pass
         Gtk.main_quit()
 
+# ── Flash do gesto no ícone ──────────────────────────────────────────────────
+_flash_timer_id = None
+
+def flash_gesture(indicator: "GestureIndicator", emoji: str):
+    """Atualiza o ícone da bandeja com o emoji por 1 segundo e volta ao normal."""
+    global _flash_timer_id
+
+    # Cancela flash anterior se houver
+    if _flash_timer_id is not None:
+        GLib.source_remove(_flash_timer_id)
+        _flash_timer_id = None
+
+    gesture_icon = _make_gesture_icon(emoji)
+    GLib.idle_add(indicator.ind.set_icon_full, gesture_icon, "gesto")
+
+    def _restore():
+        global _flash_timer_id
+        _flash_timer_id = None
+        active = ICON_ACTIVE() if not is_paused() else ICON_PAUSED()
+        GLib.idle_add(indicator.ind.set_icon_full, active, "gesture-control")
+        return False
+
+    _flash_timer_id = GLib.timeout_add(1000, _restore)
+
+
 # ── Watchdog ──────────────────────────────────────────────────────────────────
 def watchdog(indicator: GestureIndicator):
+    tick = 0
     while True:
-        time.sleep(10)
-        if not get_pid() and not is_paused():
+        time.sleep(0.1)
+        tick += 1
+
+        # Verificar sinal de gesto a cada 100ms
+        if GESTURE_SIGNAL.exists():
             try:
-                start_daemon()
-                GLib.idle_add(indicator._set_icon, ICON_ACTIVE())
-                GLib.idle_add(indicator.item_toggle.set_label, "Pausar")
+                emoji = GESTURE_SIGNAL.read_text().strip()
+                GESTURE_SIGNAL.unlink(missing_ok=True)
+                if emoji and not is_paused():
+                    flash_gesture(indicator, emoji)
             except Exception:
-                GLib.idle_add(indicator._set_icon, ICON_ERROR())
+                pass
+
+        # Verificar saúde do daemon a cada 10s
+        if tick % 100 == 0:
+            if not get_pid() and not is_paused():
+                try:
+                    start_daemon()
+                    GLib.idle_add(indicator._set_icon, ICON_ACTIVE())
+                    GLib.idle_add(indicator.item_toggle.set_label, "Pausar")
+                except Exception:
+                    GLib.idle_add(indicator._set_icon, ICON_ERROR())
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
