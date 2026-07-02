@@ -226,27 +226,38 @@ with HandLandmarker.create_from_options(options) as landmarker:
         if result.hand_landmarks:
             hands_list = result.hand_landmarks
 
-            if len(hands_list) == 2:
-                dynamic.update_two_hands(
-                    _wrap(hands_list[0]),
-                    _wrap(hands_list[1]),
-                )
-
             hand = _wrap(hands_list[0])
-            dynamic.update(hand)
 
-            if now - last_action > COOLDOWN:
-                dyn = dynamic.classify()
-                if dyn:
-                    if handle_gesture(dyn, "dynamic"):
-                        last_action = now
-                        dynamic.reset()
-                else:
+            # Enquanto uma confirmação está pendente, IGNORA gestos dinâmicos
+            # (evita que tremores da mão durante o Joinha disparem um swipe/tilt
+            # por engano e bloqueiem a detecção do próprio Joinha/Punho)
+            if confirm_dialog.has_pending():
+                if now - last_action > COOLDOWN:
                     sta = static.classify(hand)
-                    if sta:
+                    if sta in ("CONFIRMAR", "FECHAR_JANELA"):
                         if handle_gesture(sta, "static"):
                             last_action = now
                             dynamic.reset()
+            else:
+                if len(hands_list) == 2:
+                    dynamic.update_two_hands(
+                        _wrap(hands_list[0]),
+                        _wrap(hands_list[1]),
+                    )
+                dynamic.update(hand)
+
+                if now - last_action > COOLDOWN:
+                    dyn = dynamic.classify()
+                    if dyn:
+                        if handle_gesture(dyn, "dynamic"):
+                            last_action = now
+                            dynamic.reset()
+                    else:
+                        sta = static.classify(hand)
+                        if sta:
+                            if handle_gesture(sta, "static"):
+                                last_action = now
+                                dynamic.reset()
 
         elapsed = time.monotonic() - loop_start
         sleep_t = FRAME_DELAY - elapsed

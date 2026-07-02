@@ -31,3 +31,100 @@
 2026-07-01 21:35:24 [INFO] Aguardando confirmação: SELECIONAR_TUDO
 2026-07-01 21:35:29 [INFO] Confirmação timeout: SELECIONAR_TUDO \u2192 CANCELADA
 2026-07-01 21:35:29 [INFO] Cancelado: SELECIONAR_TUDO
+2026-07-01 21:37:34 [INFO] Iniciado (PID 360).
+2026-07-01 21:37:40 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-07-01 21:37:41 [INFO] Confirmação via Joinha: SELECIONAR_TUDO \u2192 ACEITA
+2026-07-01 21:37:41 [INFO] Executado após confirmação: SELECIONAR_TUDO \u2192 ['KEY', 'ctrl+a']
+2026-07-01 21:37:41 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:37:45 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:46 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:47 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:48 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:50 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:51 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:52 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:37:53 [INFO] Dinâmico: TILT_DIREITA              \u2192 ['KEY', 'ctrl+win+right']
+2026-07-01 21:37:55 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:38:00 [INFO] Estático: NOVA_ABA                  \u2192 ['KEY', 'ctrl+t']
+2026-07-01 21:38:01 [INFO] Estático: NOVA_ABA                  \u2192 ['KEY', 'ctrl+t']
+2026-07-01 21:38:06 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:38:07 [INFO] Confirmação via Punho: FECHAR_ABA \u2192 CANCELADA
+2026-07-01 21:38:07 [INFO] Cancelado: FECHAR_ABA
+2026-07-01 21:38:07 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:38:08 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:38:09 [INFO] Dinâmico: SWIPE_RAPIDO_BAIXO        \u2192 ['KEY', 'win+down']
+2026-07-01 21:38:12 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:38:17 [INFO] Confirmação timeout: FECHAR_ABA \u2192 CANCELADA
+2026-07-01 21:38:17 [INFO] Cancelado: FECHAR_ABA
+2026-07-01 21:38:18 [INFO] Dinâmico: SWIPE_RAPIDO_DIREITA      \u2192 ['KEY', 'ctrl+tab']
+2026-07-01 21:38:19 [INFO] Aguardando confirmação: FECHAR_JANELA
+2026-07-01 21:38:21 [INFO] Confirmação via Punho: FECHAR_JANELA \u2192 CANCELADA
+2026-07-01 21:38:21 [INFO] Cancelado: FECHAR_JANELA
+2026-07-01 21:38:21 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:38:24 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:38:29 [INFO] Confirmação timeout: FECHAR_ABA \u2192 CANCELADA
+2026-07-01 21:38:29 [INFO] Cancelado: FECHAR_ABA
+2026-07-01 21:38:29 [INFO] Dinâmico: FIGURE_EIGHT              \u2192 ['KEY', 'win+tab']
+2026-07-01 21:38:32 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:38:33 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:38:41 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:38:51 [INFO] Encerrando.
+2026-07-01 21:41:57 [INFO] Iniciado (PID 13564).
+2026-07-01 21:42:09 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:42:11 [INFO] Confirmação via Joinha: FECHAR_ABA \u2192 ACEITA
+2026-07-01 21:42:11 [INFO] Executado após confirmação: FECHAR_ABA \u2192 ['KEY', 'ctrl+w']
+2026-07-01 21:42:11 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:42:12 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:42:15 [INFO] Confirmação via Joinha: FECHAR_ABA \u2192 ACEITA
+2026-07-01 21:42:15 [INFO] Executado após confirmação: FECHAR_ABA \u2192 ['KEY', 'ctrl+w']
+2026-07-01 21:42:15 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:42:18 [INFO] Estático: TROCAR_JANELA             \u2192 ['KEY', 'alt+tab']
+2026-07-01 21:42:20 [INFO] Estático: TROCAR_JANELA             \u2192 ['KEY', 'alt+tab']
+2026-07-01 21:42:22 [INFO] Aguardando confirmação: VOLTAR
+2026-07-01 21:42:26 [INFO] Confirmação via Punho: VOLTAR \u2192 CANCELADA
+2026-07-01 21:42:26 [INFO] Cancelado: VOLTAR
+2026-07-01 21:42:26 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:42:29 [INFO] Estático: WORKSPACE_DIR             \u2192 ['KEY', 'ctrl+win+right']
+2026-07-01 21:42:31 [INFO] Estático: WORKSPACE_DIR             \u2192 ['KEY', 'ctrl+win+right']
+2026-07-01 21:42:32 [INFO] Aguardando confirmação: VOLTAR
+2026-07-01 21:42:33 [INFO] Confirmação via Punho: VOLTAR \u2192 CANCELADA
+2026-07-01 21:42:33 [INFO] Cancelado: VOLTAR
+2026-07-01 21:42:33 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:42:38 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:39 [INFO] Dinâmico: TILT_DIREITA              \u2192 ['KEY', 'ctrl+win+right']
+2026-07-01 21:42:41 [INFO] Estático: MAXIMIZAR                 \u2192 ['KEY', 'win+up']
+2026-07-01 21:42:43 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:44 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:45 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:47 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:48 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:49 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:50 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:42:55 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:42:56 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-07-01 21:42:58 [INFO] Confirmação via Joinha: SELECIONAR_TUDO \u2192 ACEITA
+2026-07-01 21:42:58 [INFO] Executado após confirmação: SELECIONAR_TUDO \u2192 ['KEY', 'ctrl+a']
+2026-07-01 21:42:58 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:43:08 [INFO] Estático: NOVA_ABA                  \u2192 ['KEY', 'ctrl+t']
+2026-07-01 21:43:10 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:43:11 [INFO] Estático: SCROLL_BAIXO              \u2192 ['SCROLL', 'down']
+2026-07-01 21:43:12 [INFO] Aguardando confirmação: FECHAR_ABA
+2026-07-01 21:43:14 [INFO] Confirmação via Joinha: FECHAR_ABA \u2192 ACEITA
+2026-07-01 21:43:14 [INFO] Executado após confirmação: FECHAR_ABA \u2192 ['KEY', 'ctrl+w']
+2026-07-01 21:43:14 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:43:19 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:43:20 [INFO] Aguardando confirmação: DELETAR
+2026-07-01 21:43:22 [INFO] Confirmação via Joinha: DELETAR \u2192 ACEITA
+2026-07-01 21:43:22 [INFO] Executado após confirmação: DELETAR \u2192 ['KEY', 'delete']
+2026-07-01 21:43:22 [INFO] Confirmação: ACEITA via Joinha
+2026-07-01 21:43:25 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:43:26 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:43:29 [INFO] Aguardando confirmação: DELETAR
+2026-07-01 21:43:32 [INFO] Confirmação via Punho: DELETAR \u2192 CANCELADA
+2026-07-01 21:43:32 [INFO] Cancelado: DELETAR
+2026-07-01 21:43:32 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:43:35 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:43:36 [INFO] Aguardando confirmação: DELETAR
+2026-07-01 21:43:38 [INFO] Confirmação via Punho: DELETAR \u2192 CANCELADA
+2026-07-01 21:43:38 [INFO] Cancelado: DELETAR
+2026-07-01 21:43:38 [INFO] Confirmação: CANCELADA via Punho
