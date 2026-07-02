@@ -2,13 +2,13 @@
 """
 debug_landmarks.py
 ------------------
-Ferramenta visual para descobrir vetores de gestos novos.
+Ferramenta visual para descobrir vetores de gestos.
 Usa a nova API mediapipe.tasks (0.10.13+).
 
 Uso:
-  python3 debug_landmarks.py
+  python debug_landmarks.py
 
-Faça o gesto na frente da câmera e veja o vetor no terminal e na janela.
+Faça o gesto na câmera e veja o vetor no terminal e na janela.
 Pressione 'q' para sair.
 """
 
@@ -25,10 +25,10 @@ MODEL = BASE / "hand_landmarker.task"
 
 if not MODEL.exists():
     print("ERRO: hand_landmarker.task não encontrado.")
-    print("Execute: wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task -O hand_landmarker.task")
+    print("Baixe em:")
+    print("https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task")
     exit(1)
 
-# Conexões dos landmarks para desenhar o esqueleto da mão
 HAND_CONNECTIONS = [
     (0,1),(1,2),(2,3),(3,4),
     (0,5),(5,6),(6,7),(7,8),
@@ -47,7 +47,7 @@ options = HandLandmarkerOptions(
     running_mode=mp_vision.RunningMode.IMAGE,
 )
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 print("=== Debug de gestos ===")
 print("Faça o gesto na câmera. Pressione 'q' para sair.\n")
 
@@ -66,19 +66,14 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         if result.hand_landmarks:
             lms = result.hand_landmarks[0]
-
-            # Desenhar esqueleto
             for a, b in HAND_CONNECTIONS:
                 x1, y1 = int(lms[a].x * w), int(lms[a].y * h)
                 x2, y2 = int(lms[b].x * w), int(lms[b].y * h)
-                cv2.line(frame, (x1,y1), (x2,y2), (0,200,80), 2)
-
-            # Desenhar pontos
+                cv2.line(frame, (x1, y1), (x2, y2), (0, 200, 80), 2)
             for lm in lms:
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 cv2.circle(frame, (cx, cy), 4, (0, 255, 120), -1)
 
-            # Calcular e mostrar vetor
             f     = fingers_up(lms)
             label = f"Dedos: {f}   Tupla: {tuple(f)}"
             print(f"\r{label}   ", end="", flush=True)

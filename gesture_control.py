@@ -2,19 +2,19 @@
 """
 gesture_control.py
 ------------------
-Daemon principal — detecta gestos via câmera e executa ações.
-Usa mediapipe.tasks (0.10.13+) e evdev para envio de teclas.
-Sinaliza o tray_icon.py via arquivo IPC para piscar o emoji no ícone.
+Daemon principal — detecta gestos via câmera e executa ações no Windows.
+Usa mediapipe.tasks (0.10.13+) e pyautogui para envio de teclas.
+Comunica com tray_icon.py via arquivo IPC em %TEMP%.
 """
 
 import cv2
 import time
 import logging
-import signal
 import sys
 import json
 import os
 import threading
+import tempfile
 from pathlib import Path
 
 import mediapipe as mp
@@ -23,14 +23,17 @@ from mediapipe.tasks.python import vision as mp_vision
 from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-BASE           = Path(__file__).parent
-CONFIG         = BASE / "gestures" / "custom.json"
-LOGFILE        = BASE / "gesture.log"
-MODEL          = BASE / "hand_landmarker.task"
-PIDFILE        = Path("/tmp/gesture-control.pid")
-PAUSE          = Path("/tmp/gesture-control.pause")
-QUIT           = Path("/tmp/gesture-control.quit")
-GESTURE_SIGNAL = Path("/tmp/gesture-control.gesture")
+BASE    = Path(__file__).parent
+CONFIG  = BASE / "gestures" / "custom.json"
+LOGFILE = BASE / "gesture.log"
+MODEL   = BASE / "hand_landmarker.task"
+
+# Arquivos IPC em %TEMP% (equivalente ao /tmp do Linux)
+_TEMP          = Path(tempfile.gettempdir())
+PIDFILE        = _TEMP / "gesture-control.pid"
+PAUSE          = _TEMP / "gesture-control.pause"
+QUIT           = _TEMP / "gesture-control.quit"
+GESTURE_SIGNAL = _TEMP / "gesture-control.gesture"
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -44,6 +47,7 @@ log = logging.getLogger()
 # ── Verificações iniciais ─────────────────────────────────────────────────────
 if not MODEL.exists():
     log.error("Modelo não encontrado: %s", MODEL)
+    log.error("Baixe em: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task")
     sys.exit(1)
 
 try:
@@ -76,27 +80,27 @@ GESTURE_EMOJI = {
 }
 
 def _signal_tray(gesture_name: str):
-    """Escreve emoji no arquivo IPC — tray_icon.py lê e pisca o ícone."""
+    """Escreve emoji no arquivo IPC — tray_icon.py lê e atualiza o ícone."""
     emoji = GESTURE_EMOJI.get(gesture_name, "✋")
     try:
-        GESTURE_SIGNAL.write_text(emoji)
+        GESTURE_SIGNAL.write_text(emoji, encoding="utf-8")
     except Exception:
         pass
 
 # ── Encerramento gracioso ─────────────────────────────────────────────────────
 cap = None
+_running = True
 
-def shutdown(sig=None, frame=None):
-    log.info("Encerrando (sinal %s).", sig)
+def shutdown():
+    global _running
+    log.info("Encerrando.")
+    _running = False
     keyboard.close()
     if cap is not None:
         cap.release()
     PIDFILE.unlink(missing_ok=True)
     QUIT.unlink(missing_ok=True)
     sys.exit(0)
-
-signal.signal(signal.SIGTERM, shutdown)
-signal.signal(signal.SIGINT,  shutdown)
 
 # ── Executar ação ─────────────────────────────────────────────────────────────
 def run_action(cmd: list):
@@ -122,10 +126,10 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
     if not cmd:
         return False
 
-    # Sinaliza tray sempre que um gesto é reconhecido
+    # Sinaliza tray
     _signal_tray(gesture_name)
 
-    # Gesto destrutivo → confirmação antes de executar
+    # Gesto destrutivo → confirmação
     if confirm_dialog.needs_confirmation(gesture_name):
         log.info("Aguardando confirmação: %s", gesture_name)
 
@@ -136,7 +140,6 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
             else:
                 log.info("Cancelado: %s", gesture_name)
 
-        # Roda em thread separada para não bloquear o loop da câmera
         threading.Thread(
             target=confirm_dialog.show,
             args=(gesture_name, on_result),
@@ -144,7 +147,7 @@ def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
         ).start()
         return True
 
-    # Gesto normal → executar direto em thread para não travar câmera
+    # Gesto normal → executar direto
     threading.Thread(target=run_action, args=(cmd,), daemon=True).start()
     log.info("%s: %-25s → %s",
              "Dinâmico" if gesture_type == "dynamic" else "Estático",
@@ -179,17 +182,17 @@ options = HandLandmarkerOptions(
 
 log.info("Iniciado (PID %s).", os.getpid())
 
-cap         = cv2.VideoCapture(0)
+cap         = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # CAP_DSHOW = backend Windows
 last_action = 0.0
 frame_count = 0
 
 if not cap.isOpened():
-    log.error("Câmera não encontrada.")
+    log.error("Câmera não encontrada. Verifique as permissões no Windows.")
     PIDFILE.unlink(missing_ok=True)
     sys.exit(1)
 
 with HandLandmarker.create_from_options(options) as landmarker:
-    while True:
+    while _running:
         loop_start = time.monotonic()
 
         if QUIT.exists():
@@ -206,7 +209,6 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         frame_count += 1
         if frame_count % SKIP_FRAMES != 0:
-            # Throttle — dorme o restante do frame mesmo quando pula
             elapsed = time.monotonic() - loop_start
             sleep_t = FRAME_DELAY - elapsed
             if sleep_t > 0:
