@@ -1,0 +1,33 @@
+2026-07-01 21:34:45 [INFO] Iniciado (PID 8320).
+2026-07-01 21:34:46 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:34:47 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:34:49 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:34:50 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:34:51 [INFO] Aguardando confirmação: DELETAR
+2026-07-01 21:34:53 [INFO] Confirmação via Punho: DELETAR \u2192 CANCELADA
+2026-07-01 21:34:53 [INFO] Cancelado: DELETAR
+2026-07-01 21:34:53 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:34:54 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:34:55 [INFO] Dinâmico: TILT_ESQUERDA             \u2192 ['KEY', 'ctrl+win+left']
+2026-07-01 21:34:56 [INFO] Aguardando confirmação: DELETAR
+2026-07-01 21:34:58 [INFO] Confirmação via Punho: DELETAR \u2192 CANCELADA
+2026-07-01 21:34:58 [INFO] Cancelado: DELETAR
+2026-07-01 21:34:58 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:35:04 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:35:06 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:35:08 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:35:09 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:35:10 [INFO] Estático: SCROLL_CIMA               \u2192 ['SCROLL', 'up']
+2026-07-01 21:35:12 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-07-01 21:35:13 [INFO] Confirmação via Punho: SELECIONAR_TUDO \u2192 CANCELADA
+2026-07-01 21:35:13 [INFO] Cancelado: SELECIONAR_TUDO
+2026-07-01 21:35:13 [INFO] Confirmação: CANCELADA via Punho
+2026-07-01 21:35:14 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-07-01 21:35:19 [INFO] Confirmação timeout: SELECIONAR_TUDO \u2192 CANCELADA
+2026-07-01 21:35:19 [INFO] Cancelado: SELECIONAR_TUDO
+2026-07-01 21:35:19 [INFO] Dinâmico: FIGURE_EIGHT              \u2192 ['KEY', 'win+tab']
+2026-07-01 21:35:21 [INFO] Estático: CONFIRMAR                 \u2192 ['KEY', 'enter']
+2026-07-01 21:35:23 [INFO] Estático: NOVA_ABA                  \u2192 ['KEY', 'ctrl+t']
+2026-07-01 21:35:24 [INFO] Aguardando confirmação: SELECIONAR_TUDO
+2026-07-01 21:35:29 [INFO] Confirmação timeout: SELECIONAR_TUDO \u2192 CANCELADA
+2026-07-01 21:35:29 [INFO] Cancelado: SELECIONAR_TUDO

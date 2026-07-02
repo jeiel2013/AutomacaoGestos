@@ -167,7 +167,6 @@ def _show_window(emoji: str, label: str, on_result) -> None:
         _finish(False, on_result, label)
     finally:
         with _lock:
-            global _dialog_window
             _dialog_window = None
 
 
