@@ -330,16 +330,55 @@ def _detect_figure_eight():
     return "FIGURE_EIGHT" if sign_changes >= 2 else None
 
 
+# ── Portão de movimento ────────────────────────────────────────────────────────
+# Antes de gastar processamento tentando achar swipe/circle/tilt/etc, verifica
+# se a mão realmente se moveu o suficiente no buffer inteiro. Se o deslocamento
+# total (maior distância entre dois pontos quaisquer do trajeto) for pequeno,
+# a mão está parada ou só tremendo — provavelmente é um gesto ESTÁTICO, então
+# nem tenta classificar como dinâmico.
+MIN_MOTION_GATE = 0.045   # deslocamento mínimo (0.0 a 1.0) para liberar os detectores
+
+
+def _movement_amount() -> float:
+    """
+    Calcula o quanto a mão se moveu no buffer, usando a amplitude máxima
+    (maior menos menor) em X e Y — mais robusto que só olhar início/fim,
+    pois pega tremores em qualquer direção do trajeto.
+    """
+    if len(_palm) < 4:
+        return 0.0
+
+    xs = [p[0] for p in _palm]
+    ys = [p[1] for p in _palm]
+
+    amp_x = max(xs) - min(xs)
+    amp_y = max(ys) - min(ys)
+
+    return math.hypot(amp_x, amp_y)
+
+
+def has_enough_motion() -> bool:
+    """
+    Retorna True se o movimento acumulado no buffer ultrapassa o portão.
+    Uso externo: gesture_control.py chama antes de decidir se tenta
+    gestos dinâmicos ou vai direto para os estáticos.
+    """
+    return _movement_amount() >= MIN_MOTION_GATE
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  CLASSIFICADOR PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
 
 def classify():
     """
-    Tenta cada detector em ordem de prioridade.
-    Retorna o nome do primeiro gesto detectado ou None.
+    Tenta cada detector em ordem de prioridade — mas só se o portão de
+    movimento estiver liberado. Se a mão está praticamente parada,
+    retorna None imediatamente sem gastar processamento nos detectores
+    (e sem risco de falso positivo por tremor).
 
     Ordem de prioridade (do mais para o menos prioritário):
+      0. Portão de movimento — corta cedo se não houve deslocamento real
       1. Swipe rápido   — janela curta, detecta antes do buffer encher
       2. Zoom           — precisa de duas mãos
       3. Círculo        — movimento fechado e amplo
@@ -350,9 +389,17 @@ def classify():
       8. Tilt           — inclinação
       9. Swipe normal   — deslocamento linear com buffer completo
     """
+    # Zoom usa buffer separado (_hand_dist), então passa direto pelo portão —
+    # ele já tem seu próprio threshold (MIN_ZOOM_DELTA) que cumpre o mesmo papel.
+    zoom = _detect_zoom()
+    if zoom:
+        return zoom
+
+    if not has_enough_motion():
+        return None
+
     return (
         _detect_speed_swipe()   or
-        _detect_zoom()          or
         _detect_circle()        or
         _detect_figure_eight()  or
         _detect_wave_w()        or
