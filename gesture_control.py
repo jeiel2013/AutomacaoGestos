@@ -9,6 +9,7 @@ Comunica com tray_icon.py via arquivo IPC em %TEMP%.
 
 import cv2
 import time
+import math
 import logging
 import sys
 import json
@@ -211,6 +212,32 @@ class _LandmarkWrapper:
 def _wrap(lms):
     return _LandmarkWrapper(lms)
 
+# ── Rastreamento da "mão principal" entre frames ─────────────────────────────
+# O MediaPipe não garante que a mesma mão sempre venha no mesmo índice da
+# lista quando há duas mãos na tela — a ordem pode trocar frame a frame,
+# fazendo parecer que só uma mão "funciona". Aqui rastreamos por proximidade:
+# a mão mais perto da posição da mão principal do frame anterior continua
+# sendo a principal, então trocar de mão no meio do gesto não quebra nada.
+_last_primary_pos = None   # (x, y) da palma da mão principal no frame anterior
+
+def _select_primary_index(hands_list) -> int:
+    """Retorna o índice da mão que deve ser tratada como 'principal' agora."""
+    global _last_primary_pos
+
+    if len(hands_list) == 1:
+        idx = 0
+    elif _last_primary_pos is None:
+        idx = 0   # primeira vez — usa a primeira mão detectada
+    else:
+        def _dist(h):
+            lm = h[9]   # landmark da palma
+            return math.hypot(lm.x - _last_primary_pos[0], lm.y - _last_primary_pos[1])
+        idx = min(range(len(hands_list)), key=lambda i: _dist(hands_list[i]))
+
+    palm = hands_list[idx][9]
+    _last_primary_pos = (palm.x, palm.y)
+    return idx
+
 # ── Configurações de CPU ──────────────────────────────────────────────────────
 SKIP_FRAMES = 2
 TARGET_FPS  = 15
@@ -274,14 +301,20 @@ with HandLandmarker.create_from_options(options) as landmarker:
         now = time.monotonic()
 
         if result.hand_landmarks:
-            hands_list = result.hand_landmarks
-            hand       = _wrap(hands_list[0])
+            hands_list  = result.hand_landmarks
+            primary_idx = _select_primary_index(hands_list)
+            hand        = _wrap(hands_list[primary_idx])
 
             # 1) Confirmação pendente (Joinha/Punho) tem prioridade máxima —
             #    ignora tudo o mais até o usuário confirmar ou cancelar.
+            #    Verifica a mão principal e, se não achar nada, a outra mão
+            #    também (o Joinha pode vir de qualquer uma das duas).
             if confirm_dialog.has_pending():
                 if now - last_action > COOLDOWN:
                     sta = static.classify(hand)
+                    if not sta and len(hands_list) == 2:
+                        other = _wrap(hands_list[1 - primary_idx])
+                        sta = static.classify(other)
                     if sta in ("CONFIRMAR", "FECHAR_JANELA"):
                         if handle_gesture(sta, "static"):
                             last_action = now
@@ -293,7 +326,8 @@ with HandLandmarker.create_from_options(options) as landmarker:
                 _request_toggle_dynamic()
                 last_toggle = now
 
-            # 3) Fluxo normal — dinâmico só é avaliado se o modo estiver ativo
+            # 3) Fluxo normal — dinâmico só é avaliado se o modo estiver ativo,
+            #    e sempre segue a mão principal (rastreada por proximidade)
             else:
                 if dynamic_mode_enabled:
                     if len(hands_list) == 2:
@@ -310,7 +344,12 @@ with HandLandmarker.create_from_options(options) as landmarker:
                             last_action = now
                             dynamic.reset()
                     else:
+                        # Gesto estático — tenta a mão principal e, se não
+                        # achar nada, a outra mão (qualquer uma pode gesticular)
                         sta = static.classify(hand)
+                        if not sta and len(hands_list) == 2:
+                            other = _wrap(hands_list[1 - primary_idx])
+                            sta = static.classify(other)
                         if sta:
                             if handle_gesture(sta, "static"):
                                 last_action = now
