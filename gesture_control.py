@@ -77,6 +77,7 @@ GESTURE_EMOJI = {
     "SHAKE":"🤝","CIRCLE_CW":"🔃","CIRCLE_CCW":"🔄","FIGURE_EIGHT":"♾️",
     "WAVE_W":"〰️","ZOOM_IN":"🔍","ZOOM_OUT":"🔎","PUSH_FRENTE":"🫸",
     "PULL_ATRAS":"🫷","TILT_DIREITA":"↗️","TILT_ESQUERDA":"↖️",
+    "TOGGLE_DYNAMIC":"🔀",
 }
 
 def _signal_tray(gesture_name: str):
@@ -105,6 +106,54 @@ def shutdown():
 # ── Executar ação ─────────────────────────────────────────────────────────────
 def run_action(cmd: list):
     keyboard.dispatch(cmd)
+
+# ── Modo de gestos dinâmicos (trava mestra) ──────────────────────────────────
+# Por padrão os gestos DINÂMICOS ficam DESATIVADOS. Só os ESTÁTICOS funcionam.
+# Para ativar: faça "V" com AS DUAS MÃOS ao mesmo tempo e confirme com Joinha
+# (ou cancele com Punho). O mesmo gesto novamente desativa.
+# Isso evita que tremores da mão durante um gesto estático disparem um
+# gesto dinâmico por engano — dinâmico só roda quando você pediu explicitamente.
+dynamic_mode_enabled = False
+TOGGLE_COOLDOWN      = 2.0   # segundos mínimos entre duas tentativas de alternância
+
+def _is_double_v(hands_list) -> bool:
+    """Retorna True se AS DUAS mãos detectadas estão fazendo o sinal de V."""
+    if len(hands_list) != 2:
+        return False
+    try:
+        f1 = static.fingers_up(hands_list[0])
+        f2 = static.fingers_up(hands_list[1])
+    except Exception:
+        return False
+    V = [0, 1, 1, 0, 0]
+    return f1 == V and f2 == V
+
+def _request_toggle_dynamic():
+    """Pede confirmação (Joinha/Punho) para ligar ou desligar o modo dinâmico."""
+    global dynamic_mode_enabled
+
+    _signal_tray("TOGGLE_DYNAMIC")
+    novo_estado = not dynamic_mode_enabled
+    acao        = "ATIVAR" if novo_estado else "DESATIVAR"
+    log.info("Aguardando confirmação para %s gestos dinâmicos", acao)
+
+    def on_result(confirmed: bool):
+        global dynamic_mode_enabled
+        if confirmed:
+            dynamic_mode_enabled = novo_estado
+            if dynamic_mode_enabled:
+                dynamic.reset()   # começa o buffer limpo ao ativar
+            log.info("Gestos dinâmicos: %s",
+                     "ATIVADOS" if dynamic_mode_enabled else "DESATIVADOS")
+        else:
+            log.info("Alternância cancelada — gestos dinâmicos continuam %s",
+                     "ATIVADOS" if dynamic_mode_enabled else "DESATIVADOS")
+
+    threading.Thread(
+        target=confirm_dialog.show,
+        args=("TOGGLE_DYNAMIC", on_result),
+        daemon=True,
+    ).start()
 
 # ── Processar gesto ───────────────────────────────────────────────────────────
 def handle_gesture(gesture_name: str, gesture_type: str) -> bool:
@@ -180,10 +229,11 @@ options = HandLandmarkerOptions(
     running_mode=mp_vision.RunningMode.IMAGE,
 )
 
-log.info("Iniciado (PID %s).", os.getpid())
+log.info("Iniciado (PID %s). Gestos dinâmicos: DESATIVADOS — faça duas mãos em V + confirme para ativar.", os.getpid())
 
 cap         = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # CAP_DSHOW = backend Windows
 last_action = 0.0
+last_toggle = 0.0
 frame_count = 0
 
 if not cap.isOpened():
@@ -225,12 +275,10 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         if result.hand_landmarks:
             hands_list = result.hand_landmarks
+            hand       = _wrap(hands_list[0])
 
-            hand = _wrap(hands_list[0])
-
-            # Enquanto uma confirmação está pendente, IGNORA gestos dinâmicos
-            # (evita que tremores da mão durante o Joinha disparem um swipe/tilt
-            # por engano e bloqueiem a detecção do próprio Joinha/Punho)
+            # 1) Confirmação pendente (Joinha/Punho) tem prioridade máxima —
+            #    ignora tudo o mais até o usuário confirmar ou cancelar.
             if confirm_dialog.has_pending():
                 if now - last_action > COOLDOWN:
                     sta = static.classify(hand)
@@ -238,16 +286,25 @@ with HandLandmarker.create_from_options(options) as landmarker:
                         if handle_gesture(sta, "static"):
                             last_action = now
                             dynamic.reset()
+
+            # 2) Trava mestra — duas mãos em V liga/desliga o modo dinâmico
+            elif (_is_double_v(hands_list)
+                  and now - last_toggle > TOGGLE_COOLDOWN):
+                _request_toggle_dynamic()
+                last_toggle = now
+
+            # 3) Fluxo normal — dinâmico só é avaliado se o modo estiver ativo
             else:
-                if len(hands_list) == 2:
-                    dynamic.update_two_hands(
-                        _wrap(hands_list[0]),
-                        _wrap(hands_list[1]),
-                    )
-                dynamic.update(hand)
+                if dynamic_mode_enabled:
+                    if len(hands_list) == 2:
+                        dynamic.update_two_hands(
+                            _wrap(hands_list[0]),
+                            _wrap(hands_list[1]),
+                        )
+                    dynamic.update(hand)
 
                 if now - last_action > COOLDOWN:
-                    dyn = dynamic.classify()
+                    dyn = dynamic.classify() if dynamic_mode_enabled else None
                     if dyn:
                         if handle_gesture(dyn, "dynamic"):
                             last_action = now
@@ -263,3 +320,4 @@ with HandLandmarker.create_from_options(options) as landmarker:
         sleep_t = FRAME_DELAY - elapsed
         if sleep_t > 0:
             time.sleep(sleep_t)
+

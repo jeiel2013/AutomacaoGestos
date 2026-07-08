@@ -26,6 +26,7 @@ CONFIRM_GESTURES = {
     "FECHAR_ABA":      ("✖️",  "Fechar Aba"),
     "DESFAZER":        ("↪️",  "Desfazer"),
     "REFAZER":         ("↩️",  "Refazer"),
+    "TOGGLE_DYNAMIC":  ("🔀", "Gestos Dinâmicos"),
 }
 
 TIMEOUT_SECONDS = 5
