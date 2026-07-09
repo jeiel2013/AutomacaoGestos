@@ -23,12 +23,25 @@ python -m pip install ^
     mediapipe ^
     pyautogui ^
     pystray ^
-    pillow
+    pillow ^
+    numpy ^
+    scikit-learn ^
+    joblib
 
 if errorlevel 1 (
-    echo ERRO: Falha ao instalar dependencias.
+    echo ERRO: Falha ao instalar dependencias basicas.
     pause
     exit /b 1
+)
+
+echo.
+echo Instalando PyTorch (CPU) para gestos dinamicos com GRU...
+python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+if errorlevel 1 (
+    echo AVISO: Falha ao instalar PyTorch. Os gestos dinamicos vao
+    echo usar o modo de deteccao geometrica ^(sem ML^) ate voce
+    echo instalar manualmente: pip install torch
 )
 
 echo.
